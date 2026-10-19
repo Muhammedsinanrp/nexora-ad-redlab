@@ -1,0 +1,11 @@
+Attack path / behavior,ATT&CK ID,Technique,Observed evidence / rationale,Mapping confidence / note,Official reference URL
+Credential Exposure,T1552.001,Unsecured Credentials: Credentials In Files,Credential stored as plaintext in app.ini and read through a share.,Direct mapping,https://attack.mitre.org/techniques/T1552/001/
+Credential Exposure,T1078.002,Valid Accounts: Domain Accounts,Recovered svc_backup domain credential was used to authenticate to SRV-APP01.,Direct mapping,https://attack.mitre.org/techniques/T1078/002/
+Credential Exposure,T1021.002,Remote Services: SMB/Windows Admin Shares,Authenticated svc_backup access to the SRV-APP01 C$ share was validated.,Direct mapping,https://attack.mitre.org/techniques/T1021/002/
+Kerberoasting,T1558.003,Steal or Forge Kerberos Tickets: Kerberoasting,Requested TGS ticket with RC4 encryption (etype 23) for svc-sql SPN.,Direct mapping,https://attack.mitre.org/techniques/T1558/003/
+Kerberoasting,T1110.002,Brute Force: Password Cracking,Offline password auditing of recovered TGS hash using Hashcat mode 13100.,Direct mapping,https://attack.mitre.org/techniques/T1110/002/
+Kerberoasting,T1078.002,Valid Accounts: Domain Accounts,Cracked svc-sql account credentials validated against Active Directory.,Direct mapping,https://attack.mitre.org/techniques/T1078/002/
+Active Directory ACL Abuse,T1069.002,Permission Groups Discovery: Domain Groups,BloodHound Community Edition used to map user and group memberships.,Direct mapping,https://attack.mitre.org/techniques/T1069/002/
+Active Directory ACL Abuse,T1098,Account Manipulation,GenericAll permission abused to reset the password of target account svc-sql.,Direct mapping,https://attack.mitre.org/techniques/T1098/
+Active Directory ACL Abuse,T1078.002,Valid Accounts: Domain Accounts,Authenticated with modified credentials for account svc-sql.,Direct mapping,https://attack.mitre.org/techniques/T1078/002/
+Active Directory ACL Abuse,T1068,Exploitation for Privilege Escalation,Target account was verified as member of Server Operators on domain controller.,Direct mapping,https://attack.mitre.org/techniques/T1068/

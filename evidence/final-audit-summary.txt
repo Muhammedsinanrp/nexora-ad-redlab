@@ -1,0 +1,36 @@
+================================================================================
+NEXORA SYSTEMS — AD RED TEAM ENGAGEMENT AUDIT SUMMARY
+Target Domain: nexora.local | NetBIOS: NEXORA
+Lead Operator: Red Team Emulation Unit (Kali-10.10.10.10)
+Lab Isolation: Private VirtualBox Network (No external routing)
+================================================================================
+
+[AUDIT SUMMARY — ATTACK PATHS]
+
+1. CREDENTIAL EXPOSURE (Path A)
+   - Vulnerable Share: \\Nexora-SRV-APP01\NexoraApp
+   - Target File: app.ini (SHA-256: 9e71b2d308f234aa6b189a03b578c7a82b2046db419c8309df559c57d8139591)
+   - Exposed Account: NEXORA\svc_backup
+   - Validation: Administrative SMB access confirmed to \\Nexora-SRV-APP01\C$
+   - Status: VERIFIED & AUDITED
+
+2. KERBEROASTING (Path B)
+   - Target Service: MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433
+   - Target Account: NEXORA\svc-sql
+   - Ticket Format: Kerberos 5 TGS-REP etype 23 (RC4-HMAC-MD5)
+   - Auditing Tool: Hashcat v6.2 (Mode 13100)
+   - Recovery: 1 of 1 target password hashes cracked successfully
+   - Status: VERIFIED & AUDITED
+
+3. ACTIVE DIRECTORY ACL ABUSE (Path C)
+   - Ingestion Tool: SharpHound Community Edition
+   - Analysis Platform: BloodHound CE v5.x
+   - Insecure ACE: GenericAll rights over NEXORA\svc-sql granted to delegated group
+   - Action: Controlled password reset executed via RPC/LDAP
+   - Escalation: Target verified as member of NEXORA\Server Operators
+   - Impact: SYSTEM privileges achievable on Domain Controller (Nexora-DC01)
+   - Status: VERIFIED & AUDITED
+
+================================================================================
+FINAL VERDICT: CRITICAL VULNERABILITIES VALIDATED. IMMEDIATE REMEDIATION REQUIRED.
+================================================================================

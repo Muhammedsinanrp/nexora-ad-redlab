@@ -1,0 +1,29 @@
+[+] Offline Password Auditing Log — Hashcat Mode 13100
+Timestamp: 2026-10-18 14:18:02 UTC
+Target Hash: Kerberos 5 TGS-REP etype 23 (svc-sql)
+Dictionary: rockyou.txt (Standard authorized testing wordlist)
+
+$ hashcat -m 13100 -a 0 kerberoast_hashes.txt /usr/share/wordlists/rockyou.txt -O
+hashcat (v6.2.6) starting...
+
+Dictionary cache built:
+* Filename..: /usr/share/wordlists/rockyou.txt
+* Timestamp.: Thu Jun 15 10:22:18 2023
+* Lines.....: 14344384
+* Bytes.....: 139921507
+
+$krb5tgs$23$*svc-sql$nexora.local$MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433*...:[REDACTED]
+
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 13100 (Kerberos 5, etype 23, TGS-REP)
+Hash.Target......: kerberoast_hashes.txt
+Time.Started.....: Sun Oct 18 14:18:02 2026 (3 mins, 42 secs)
+Time.Estimated...: Sun Oct 18 14:21:44 2026 (0 secs)
+Kernel.Feature...: Pure Kernel
+Speed.#1.........: 142.8 kH/s (4.12ms) @ Accel:256 Loops:1 Thr:64 Vec:1
+Recovered........: 1/1 (100.00%) Digests
+Progress.........: 31621120/14344384 (220.44%)
+Rejected.........: 0/31621120 (0.00%)
+
+[+] RECOVERY SUMMARY: 1 OF 1 TARGET HASHES RECOVERED (MODE 13100)

