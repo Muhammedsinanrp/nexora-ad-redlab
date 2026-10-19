@@ -1,0 +1,20 @@
+[+] BloodHound Cypher Query & ACL Abuse Validation Log
+Timestamp: 2026-10-18 14:25:10 UTC
+Analysis Engine: BloodHound CE v5.4.1 (Neo4j Graph Database)
+
+MATCH p=(u:User)-[r:GenericAll]->(t:User {name:'SVC-SQL@NEXORA.LOCAL'})
+RETURN p
+
+Query Results:
+- Principal: NEXORA\dev_user (via membership in NEXORA\IT-Support)
+- Relationship: GenericAll
+- Target: NEXORA\svc-sql
+- Target Object Type: User Account
+- Target Group Memberships:
+  * NEXORA\Domain Users
+  * NEXORA\Server Operators (RID 549 - High Privilege)
+
+Privilege Path Summary:
+Low-priv account (dev_user) possesses discretionary write access over svc-sql.
+By executing an RPC password reset (setuserinfo2), the operator can commandeer svc-sql
+and inherit Server Operators rights on Nexora-DC01.

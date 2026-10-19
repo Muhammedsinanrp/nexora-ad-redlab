@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexora Systems — AD Red Team Simulation Lab</title>
+  <meta name="description" content="Nexora Systems Offensive Security: Active Directory Red Team Simulation Lab — Advanced adversary simulation, kill chain orchestration, and AD attack emulation platform." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="redteam.css" />
+</head>
+<body>
+  <!-- Animated Background -->
+  <canvas id="matrixCanvas"></canvas>
+  <div class="hex-grid"></div>
+
+  <!-- Top Navigation -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-left">
+      <div class="logo-wrap">
+        <div class="logo-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke="#ff3c3c" stroke-width="1.5" fill="none"/>
+            <polygon points="16,7 25,12 25,20 16,25 7,20 7,12" stroke="#ff3c3c" stroke-width="1" fill="rgba(255,60,60,0.08)"/>
+            <circle cx="16" cy="16" r="4" fill="#ff3c3c"/>
+            <line x1="16" y1="2" x2="16" y2="7" stroke="#ff3c3c" stroke-width="1"/>
+            <line x1="30" y1="9" x2="25" y2="12" stroke="#ff3c3c" stroke-width="1"/>
+            <line x1="30" y1="23" x2="25" y2="20" stroke="#ff3c3c" stroke-width="1"/>
+            <line x1="16" y1="30" x2="16" y2="25" stroke="#ff3c3c" stroke-width="1"/>
+            <line x1="2" y1="23" x2="7" y2="20" stroke="#ff3c3c" stroke-width="1"/>
+            <line x1="2" y1="9" x2="7" y2="12" stroke="#ff3c3c" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="brand">NEXORA</span>
+          <span class="brand-sub">SYSTEMS</span>
+        </div>
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="op-badge">
+        <span class="op-dot"></span>
+        <span class="op-label">OP: PHANTOM CROWN</span>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <nav class="nav-tabs">
+        <button class="nav-tab active" id="tab-dashboard" onclick="switchTab('dashboard')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </button>
+        <button class="nav-tab" id="tab-attack" onclick="switchTab('attack')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Attack Modules
+        </button>
+        <button class="nav-tab" id="tab-topology" onclick="switchTab('topology')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>
+          AD Topology
+        </button>
+        <button class="nav-tab" id="tab-killchain" onclick="switchTab('killchain')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.98 0 3.8.64 5.27 1.72"/><path d="M21 3l-5 5"/><path d="M16 3h5v5"/></svg>
+          Kill Chain
+        </button>
+        <button class="nav-tab" id="tab-loot" onclick="switchTab('loot')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          Loot Vault
+        </button>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <div class="status-cluster">
+        <div class="status-item">
+          <span class="status-label">DOMAIN</span>
+          <span class="status-val online">NEXCORP.LOCAL</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">OPERATOR</span>
+          <span class="status-val">R3D_PHANTOM</span>
+        </div>
+      </div>
+      <div class="clock-wrap">
+        <span class="clock-label">OPS TIME</span>
+        <span class="clock" id="clock">00:00:00</span>
+      </div>
+      <div class="alert-btn" id="alertBtn" onclick="toggleAlerts()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="alert-count" id="alertCount">3</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Alert Dropdown -->
+  <div class="alert-dropdown" id="alertDropdown">
+    <div class="alert-header">SYSTEM ALERTS</div>
+    <div class="alert-item critical">
+      <span class="alert-icon">⚠</span>
+      <div>
+        <div class="alert-title">DCSync Detected on DC01</div>
+        <div class="alert-time">14:23:07 UTC</div>
+      </div>
+    </div>
+    <div class="alert-item warning">
+      <span class="alert-icon">⚡</span>
+      <div>
+        <div class="alert-title">Kerberoasting attempt — SVC_SQL</div>
+        <div class="alert-time">14:19:44 UTC</div>
+      </div>
+    </div>
+    <div class="alert-item info">
+      <span class="alert-icon">ℹ</span>
+      <div>
+        <div class="alert-title">BloodHound enumeration completed</div>
+        <div class="alert-time">14:15:01 UTC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- ═══════════════════ DASHBOARD TAB ═══════════════════ -->
+    <section class="tab-panel active" id="panel-dashboard">
+      <div class="dash-grid">
+
+        <!-- Stat Cards Row -->
+        <div class="stats-row">
+          <div class="stat-card" data-color="red">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="stat-data">
+              <span class="stat-val" id="stat-hosts">0</span>
+              <span class="stat-label">Hosts Compromised</span>
+            </div>
+          </div>
+          <div class="stat-card" data-color="orange">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="stat-data">
+              <span class="stat-val" id="stat-creds">0</span>
+              <span class="stat-label">Credentials Captured</span>
+            </div>
+          </div>
+          <div class="stat-card" data-color="blue">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <div class="stat-data">
+              <span class="stat-val" id="stat-objects">0</span>
+              <span class="stat-label">AD Objects Enumerated</span>
+            </div>
+          </div>
+          <div class="stat-card" data-color="purple">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="stat-data">
+              <span class="stat-val" id="stat-privesc">0</span>
+              <span class="stat-label">Privesc Paths Found</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main dash layout -->
+        <div class="dash-main">
+
+          <!-- Kill Chain Progress -->
+          <div class="panel-card kill-chain-mini">
+            <div class="panel-header">
+              <span class="panel-title">MITRE ATT&CK KILL CHAIN</span>
+              <span class="panel-badge">ACTIVE</span>
+            </div>
+            <div class="kill-chain-steps" id="killChainSteps">
+              <div class="kc-step done" data-phase="recon">
+                <div class="kc-icon">🔍</div>
+                <div class="kc-label">Reconnaissance</div>
+                <div class="kc-status">COMPLETE</div>
+                <div class="kc-bar"><div class="kc-fill" style="width:100%"></div></div>
+              </div>
+              <div class="kc-arrow">›</div>
+              <div class="kc-step done" data-phase="init">
+                <div class="kc-icon">⚡</div>
+                <div class="kc-label">Initial Access</div>
+                <div class="kc-status">COMPLETE</div>
+                <div class="kc-bar"><div class="kc-fill" style="width:100%"></div></div>
+              </div>
+              <div class="kc-arrow">›</div>
+              <div class="kc-step active" data-phase="exec">
+                <div class="kc-icon">💻</div>
+                <div class="kc-label">Execution</div>
+                <div class="kc-status">IN PROGRESS</div>
+                <div class="kc-bar"><div class="kc-fill" style="width:65%"></div></div>
+              </div>
+              <div class="kc-arrow">›</div>
+              <div class="kc-step pending" data-phase="persist">
+                <div class="kc-icon">🔒</div>
+                <div class="kc-label">Persistence</div>
+                <div class="kc-status">PENDING</div>
+                <div class="kc-bar"><div class="kc-fill" style="width:0%"></div></div>
+              </div>
+              <div class="kc-arrow">›</div>
+              <div class="kc-step pending" data-phase="privesc">
+                <div class="kc-icon">🚀</div>
+                <div class="kc-label">Priv. Escalation</div>
+                <div class="kc-status">PENDING</div>
+                <div class="kc-bar"><div class="kc-fill" style="width:0%"></div></div>
+              </div>
+              <div class="kc-arrow">›</div>
+              <div class="kc-step pending" data-phase="lateral">
+                <div class="kc-icon">🌐</div>
+                <div class="kc-label">Lateral Movement</div>
+                <div class="kc-status">PENDING</div>
+                <div class="kc-bar"><div class="kc-fill" style="width:0%"></div></div>
+              </div>
+              <div class="kc-arrow">›</div>
+              <div class="kc-step pending" data-phase="exfil">
+                <div class="kc-icon">📤</div>
+                <div class="kc-label">Exfiltration</div>
+                <div class="kc-status">PENDING</div>
+                <div class="kc-bar"><div class="kc-fill" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-lower">
+            <!-- Live Terminal -->
+            <div class="panel-card terminal-panel">
+              <div class="panel-header">
+                <span class="panel-title">LIVE OPERATOR CONSOLE</span>
+                <div class="terminal-controls">
+                  <button class="term-btn" onclick="clearTerminal()">CLR</button>
+                  <button class="term-btn active" id="pauseBtn" onclick="toggleTermPause()">⏸ PAUSE</button>
+                </div>
+              </div>
+              <div class="terminal-body" id="terminalBody">
+                <div class="term-line"><span class="term-ts">[14:15:01]</span> <span class="term-ok">[+]</span> BloodHound collector initialized — nexcorp.local</div>
+                <div class="term-line"><span class="term-ts">[14:15:03]</span> <span class="term-ok">[+]</span> Enumerating domain users... found 847 objects</div>
+                <div class="term-line"><span class="term-ts">[14:15:07]</span> <span class="term-info">[*]</span> ACL enumeration in progress...</div>
+                <div class="term-line"><span class="term-ts">[14:15:44]</span> <span class="term-ok">[+]</span> Found 12 kerberoastable accounts</div>
+                <div class="term-line"><span class="term-ts">[14:16:02]</span> <span class="term-warn">[!]</span> Roasting SVC_MSSQL — RC4 ticket captured</div>
+                <div class="term-line"><span class="term-ts">[14:17:18]</span> <span class="term-ok">[+]</span> Hash cracked: SVC_MSSQL:P@ssw0rd2023!</div>
+                <div class="term-line"><span class="term-ts">[14:18:44]</span> <span class="term-info">[*]</span> Executing PowerView — Get-DomainGroupMember</div>
+                <div class="term-line"><span class="term-ts">[14:19:01]</span> <span class="term-ok">[+]</span> SVC_MSSQL member of: Server Admins, DB_Operators</div>
+                <div class="term-line"><span class="term-ts">[14:19:44]</span> <span class="term-err">[!]</span> Kerberoasting detection event (Splunk SIEM — 4769)</div>
+                <div class="term-line"><span class="term-ts">[14:20:15]</span> <span class="term-ok">[+]</span> Pivoting via SMB to SQL01.nexcorp.local</div>
+                <div class="term-line"><span class="term-ts">[14:21:30]</span> <span class="term-ok">[+]</span> WMI exec shell on SQL01 — SYSTEM level</div>
+                <div class="term-line"><span class="term-ts">[14:22:00]</span> <span class="term-info">[*]</span> Dumping LSASS via Mimikatz (obfuscated)</div>
+                <div class="term-line"><span class="term-ts">[14:23:07]</span> <span class="term-warn">[!]</span> DCSync initiated — requesting krbtgt NTLM hash</div>
+                <div class="term-line blink-line"><span class="term-ts">[14:23:09]</span> <span class="term-ok">[+]</span> krbtgt:58a478135a93ac3bf058a5ea0e8fdb71 <span class="cursor-blink">█</span></div>
+              </div>
+              <div class="terminal-input-bar">
+                <span class="term-prompt">root@nexora-c2 ~ # </span>
+                <input type="text" class="term-input" id="termInput" placeholder="Enter command..." onkeydown="handleTermInput(event)" />
+              </div>
+            </div>
+
+            <!-- Right panel -->
+            <div class="dash-right-col">
+              <!-- Threat Meter -->
+              <div class="panel-card threat-panel">
+                <div class="panel-header">
+                  <span class="panel-title">DETECTION RISK</span>
+                </div>
+                <div class="threat-meter-wrap">
+                  <svg class="threat-gauge" viewBox="0 0 200 120" width="200" height="120">
+                    <defs>
+                      <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#00ff88"/>
+                        <stop offset="50%" style="stop-color:#ffa500"/>
+                        <stop offset="100%" style="stop-color:#ff3c3c"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="#1a1f2e" stroke-width="16" fill="none" stroke-linecap="round"/>
+                    <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="url(#gaugeGrad)" stroke-width="16" fill="none" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="62.8" opacity="0.2"/>
+                    <path id="gaugeFill" d="M 20 100 A 80 80 0 0 1 180 100" stroke="url(#gaugeGrad)" stroke-width="16" fill="none" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="150"/>
+                    <text x="100" y="95" text-anchor="middle" fill="#ff3c3c" font-size="28" font-family="Orbitron" font-weight="700" id="gaugeText">42%</text>
+                    <text x="100" y="112" text-anchor="middle" fill="#4a5568" font-size="9" font-family="JetBrains Mono" id="gaugeRiskLabel">MEDIUM RISK</text>
+                  </svg>
+                </div>
+                <div class="threat-breakdown">
+                  <div class="tb-item"><span class="tb-label">SIEM Alerts</span><span class="tb-val warn">7 triggered</span></div>
+                  <div class="tb-item"><span class="tb-label">EDR Evasion</span><span class="tb-val ok">Active</span></div>
+                  <div class="tb-item"><span class="tb-label">Log Coverage</span><span class="tb-val ok">Cleared</span></div>
+                </div>
+              </div>
+
+              <!-- Target Summary -->
+              <div class="panel-card targets-panel">
+                <div class="panel-header">
+                  <span class="panel-title">TARGET HOSTS</span>
+                  <span class="panel-badge pulse">LIVE</span>
+                </div>
+                <div class="target-list">
+                  <div class="target-item owned">
+                    <div class="target-dot t-owned"></div>
+                    <div class="target-info">
+                      <span class="target-name">DC01.nexcorp.local</span>
+                      <span class="target-role">Domain Controller</span>
+                    </div>
+                    <span class="target-status owned-badge">OWNED</span>
+                  </div>
+                  <div class="target-item owned">
+                    <div class="target-dot t-owned"></div>
+                    <div class="target-info">
+                      <span class="target-name">SQL01.nexcorp.local</span>
+                      <span class="target-role">Database Server</span>
+                    </div>
+                    <span class="target-status owned-badge">OWNED</span>
+                  </div>
+                  <div class="target-item t-active">
+                    <div class="target-dot t-inprogress"></div>
+                    <div class="target-info">
+                      <span class="target-name">WEB02.nexcorp.local</span>
+                      <span class="target-role">Web Server</span>
+                    </div>
+                    <span class="target-status active-badge">IN PROGRESS</span>
+                  </div>
+                  <div class="target-item">
+                    <div class="target-dot t-pending"></div>
+                    <div class="target-info">
+                      <span class="target-name">FS01.nexcorp.local</span>
+                      <span class="target-role">File Server</span>
+                    </div>
+                    <span class="target-status pending-badge">QUEUED</span>
+                  </div>
+                  <div class="target-item">
+                    <div class="target-dot t-pending"></div>
+                    <div class="target-info">
+                      <span class="target-name">DC02.nexcorp.local</span>
+                      <span class="target-role">Backup DC</span>
+                    </div>
+                    <span class="target-status pending-badge">QUEUED</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ ATTACK MODULES TAB ═══════════════════ -->
+    <section class="tab-panel" id="panel-attack">
+      <div class="attack-grid">
+        <div class="attack-sidebar">
+          <div class="sidebar-title">ATTACK CATEGORIES</div>
+          <div class="attack-cat-list">
+            <button class="cat-btn active" onclick="filterAttacks('all')" id="cat-all">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+              All Modules <span class="cat-count">18</span>
+            </button>
+            <button class="cat-btn" onclick="filterAttacks('recon')" id="cat-recon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Reconnaissance <span class="cat-count">4</span>
+            </button>
+            <button class="cat-btn" onclick="filterAttacks('cred')" id="cat-cred">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Credential Access <span class="cat-count">5</span>
+            </button>
+            <button class="cat-btn" onclick="filterAttacks('lateral')" id="cat-lateral">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              Lateral Movement <span class="cat-count">4</span>
+            </button>
+            <button class="cat-btn" onclick="filterAttacks('privesc')" id="cat-privesc">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+              Privilege Escalation <span class="cat-count">3</span>
+            </button>
+            <button class="cat-btn" onclick="filterAttacks('persist')" id="cat-persist">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Persistence <span class="cat-count">2</span>
+            </button>
+          </div>
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-title">OPERATION STATUS</div>
+          <div class="op-stats">
+            <div class="op-stat-row"><span>Modules Run</span><span class="op-stat-val">7 / 18</span></div>
+            <div class="op-stat-row"><span>Success Rate</span><span class="op-stat-val green">85.7%</span></div>
+            <div class="op-stat-row"><span>Avg. Duration</span><span class="op-stat-val">4m 12s</span></div>
+          </div>
+        </div>
+
+        <div class="attack-modules-grid" id="attackModulesGrid">
+          <!-- Recon -->
+          <div class="attack-module" data-category="recon" data-status="done">
+            <div class="module-header">
+              <div class="module-icon mi-recon">🔍</div>
+              <div class="module-meta"><div class="module-name">BloodHound AD Enum</div><div class="module-tactic">T1087 — Account Discovery</div></div>
+              <span class="module-status-badge msb-done">EXECUTED</span>
+            </div>
+            <p class="module-desc">Full AD enumeration using SharpHound collector. Maps trust relationships, ACLs, group memberships, and shortest paths to Domain Admin.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">SharpHound</span><span class="tag">PowerShell</span><span class="tag">LDAP</span></div>
+              <button class="module-btn btn-rerun" onclick="runModule(this, 'BloodHound AD Enum')">RE-RUN</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="recon" data-status="done">
+            <div class="module-header">
+              <div class="module-icon mi-recon">🌐</div>
+              <div class="module-meta"><div class="module-name">LDAP Enumeration</div><div class="module-tactic">T1018 — Remote System Discovery</div></div>
+              <span class="module-status-badge msb-done">EXECUTED</span>
+            </div>
+            <p class="module-desc">Anonymous and authenticated LDAP queries to enumerate users, computers, OUs, and GPOs from the domain controller.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">LDAP</span><span class="tag">389/636</span><span class="tag">Anonymous</span></div>
+              <button class="module-btn btn-rerun" onclick="runModule(this, 'LDAP Enumeration')">RE-RUN</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="recon" data-status="done">
+            <div class="module-header">
+              <div class="module-icon mi-recon">📡</div>
+              <div class="module-meta"><div class="module-name">SMB Share Enumeration</div><div class="module-tactic">T1135 — Network Share Discovery</div></div>
+              <span class="module-status-badge msb-done">EXECUTED</span>
+            </div>
+            <p class="module-desc">Enumerate SMB shares across all discovered hosts. Identify readable/writable shares, SYSVOL/NETLOGON contents, and GPP credential files.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">SMB</span><span class="tag">CrackMapExec</span><span class="tag">445/TCP</span></div>
+              <button class="module-btn btn-rerun" onclick="runModule(this, 'SMB Share Enumeration')">RE-RUN</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="recon" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-recon">📊</div>
+              <div class="module-meta"><div class="module-name">PowerView Recon</div><div class="module-tactic">T1069 — Permission Groups Discovery</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Comprehensive AD recon using PowerView. Enumerate domain admins, local admins, sessions, and logged-on users across hosts.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">PowerView</span><span class="tag">PS-Remoting</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'PowerView Recon')">EXECUTE</button>
+            </div>
+          </div>
+          <!-- Credential Access -->
+          <div class="attack-module" data-category="cred" data-status="done">
+            <div class="module-header">
+              <div class="module-icon mi-cred">🎟️</div>
+              <div class="module-meta"><div class="module-name">Kerberoasting</div><div class="module-tactic">T1558.003 — Steal/Forge Kerberos Tickets</div></div>
+              <span class="module-status-badge msb-done">EXECUTED</span>
+            </div>
+            <p class="module-desc">Request Kerberos service tickets for accounts with SPNs. Crack RC4-encrypted TGS tickets offline via Hashcat to recover plaintext credentials.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">Rubeus</span><span class="tag">Hashcat</span><span class="tag">TGS</span></div>
+              <button class="module-btn btn-rerun" onclick="runModule(this, 'Kerberoasting')">RE-RUN</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="cred" data-status="done">
+            <div class="module-header">
+              <div class="module-icon mi-cred">🔑</div>
+              <div class="module-meta"><div class="module-name">AS-REP Roasting</div><div class="module-tactic">T1558.004 — AS-REP Roasting</div></div>
+              <span class="module-status-badge msb-done">EXECUTED</span>
+            </div>
+            <p class="module-desc">Target accounts with Kerberos pre-authentication disabled. Extract AS-REP hashes without credentials and crack offline.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">Impacket</span><span class="tag">GetNPUsers</span><span class="tag">Hashcat</span></div>
+              <button class="module-btn btn-rerun" onclick="runModule(this, 'AS-REP Roasting')">RE-RUN</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="cred" data-status="done">
+            <div class="module-header">
+              <div class="module-icon mi-cred">💉</div>
+              <div class="module-meta"><div class="module-name">LSASS Memory Dump</div><div class="module-tactic">T1003.001 — LSASS Memory</div></div>
+              <span class="module-status-badge msb-done">EXECUTED</span>
+            </div>
+            <p class="module-desc">Dump LSASS process memory using Mimikatz, comsvcs.dll, or ProcDump to extract NTLM hashes, Kerberos tickets, and cleartext creds.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">Mimikatz</span><span class="tag">LSASS</span><span class="tag">WDigest</span></div>
+              <button class="module-btn btn-rerun" onclick="runModule(this, 'LSASS Memory Dump')">RE-RUN</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="cred" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-cred">🔐</div>
+              <div class="module-meta"><div class="module-name">DCSync Attack</div><div class="module-tactic">T1003.006 — DCSync</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Simulate a Domain Controller to request password data via MS-DRSR. Extract NTLM hashes for all domain accounts including krbtgt.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">Mimikatz</span><span class="tag">Impacket</span><span class="tag">DRSUAPI</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'DCSync Attack')">EXECUTE</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="cred" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-cred">📋</div>
+              <div class="module-meta"><div class="module-name">GPP Password Harvest</div><div class="module-tactic">T1552.006 — Group Policy Preferences</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Search SYSVOL for Group Policy Preference XML files containing AES-256 encrypted (but with published key) passwords.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">SYSVOL</span><span class="tag">GPP</span><span class="tag">CPassword</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'GPP Password Harvest')">EXECUTE</button>
+            </div>
+          </div>
+          <!-- Lateral Movement -->
+          <div class="attack-module" data-category="lateral" data-status="done">
+            <div class="module-header">
+              <div class="module-icon mi-lateral">🌊</div>
+              <div class="module-meta"><div class="module-name">Pass-the-Hash (PtH)</div><div class="module-tactic">T1550.002 — Pass the Hash</div></div>
+              <span class="module-status-badge msb-done">EXECUTED</span>
+            </div>
+            <p class="module-desc">Authenticate using captured NTLM hashes without knowing the plaintext password. Move laterally via SMB, WMI, or PSExec.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">CME</span><span class="tag">PSExec</span><span class="tag">SMB</span></div>
+              <button class="module-btn btn-rerun" onclick="runModule(this, 'Pass-the-Hash')">RE-RUN</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="lateral" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-lateral">🎫</div>
+              <div class="module-meta"><div class="module-name">Pass-the-Ticket (PtT)</div><div class="module-tactic">T1550.003 — Pass the Ticket</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Inject stolen or forged Kerberos tickets into memory to authenticate as other users without their credentials.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">Rubeus</span><span class="tag">Mimikatz</span><span class="tag">Kerberos</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'Pass-the-Ticket')">EXECUTE</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="lateral" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-lateral">🔮</div>
+              <div class="module-meta"><div class="module-name">WMI Remote Exec</div><div class="module-tactic">T1047 — Windows Management Instrumentation</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Use WMI to execute commands on remote hosts. Stealthy alternative to PSExec with lower detection rate on legacy endpoints.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">wmic.exe</span><span class="tag">Impacket</span><span class="tag">DCOM</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'WMI Remote Exec')">EXECUTE</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="lateral" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-lateral">🕳️</div>
+              <div class="module-meta"><div class="module-name">DCOM Lateral Movement</div><div class="module-tactic">T1021.003 — DCOM</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Abuse DCOM objects (MMC20, ShellWindows) to execute code on remote machines using legitimate Windows functionality.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">DCOM</span><span class="tag">MMC20</span><span class="tag">PS</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'DCOM Lateral Movement')">EXECUTE</button>
+            </div>
+          </div>
+          <!-- Privilege Escalation -->
+          <div class="attack-module" data-category="privesc" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-privesc">👑</div>
+              <div class="module-meta"><div class="module-name">Golden Ticket Forge</div><div class="module-tactic">T1558.001 — Golden Ticket</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Forge a TGT using the krbtgt NTLM hash to create an all-access pass valid for any service in the domain — unlimited persistence.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">Mimikatz</span><span class="tag">krbtgt</span><span class="tag">Kerberos</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'Golden Ticket Forge')">EXECUTE</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="privesc" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-privesc">🪄</div>
+              <div class="module-meta"><div class="module-name">Silver Ticket Attack</div><div class="module-tactic">T1558.002 — Silver Ticket</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Forge a TGS for a specific service using the service account's hash. More targeted and stealthier than Golden Ticket attacks.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">Mimikatz</span><span class="tag">SPN</span><span class="tag">TGS</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'Silver Ticket Attack')">EXECUTE</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="privesc" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-privesc">💎</div>
+              <div class="module-meta"><div class="module-name">Diamond Ticket</div><div class="module-tactic">T1558.001 — Ticket Forging</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Request a legitimate TGT and modify it via krbtgt decryption, adding PAC entries. Bypasses Privileged Account Protection.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">Rubeus</span><span class="tag">PAC</span><span class="tag">krbtgt</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'Diamond Ticket')">EXECUTE</button>
+            </div>
+          </div>
+          <!-- Persistence -->
+          <div class="attack-module" data-category="persist" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-persist">🕸️</div>
+              <div class="module-meta"><div class="module-name">Skeleton Key</div><div class="module-tactic">T1556 — Modify Authentication Process</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Inject a master password into the DC's LSASS that allows authentication as any user while leaving their real password intact.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">Mimikatz</span><span class="tag">LSASS</span><span class="tag">DC Inject</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'Skeleton Key')">EXECUTE</button>
+            </div>
+          </div>
+          <div class="attack-module" data-category="persist" data-status="idle">
+            <div class="module-header">
+              <div class="module-icon mi-persist">🪝</div>
+              <div class="module-meta"><div class="module-name">AdminSDHolder Abuse</div><div class="module-tactic">T1484 — Domain Policy Modification</div></div>
+              <span class="module-status-badge msb-idle">READY</span>
+            </div>
+            <p class="module-desc">Modify AdminSDHolder ACL to grant persistent backdoor permissions propagated to all protected accounts via SDProp.</p>
+            <div class="module-footer">
+              <div class="module-tags"><span class="tag">ACL</span><span class="tag">SDProp</span><span class="tag">PowerView</span></div>
+              <button class="module-btn btn-exec" onclick="runModule(this, 'AdminSDHolder Abuse')">EXECUTE</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ AD TOPOLOGY TAB ═══════════════════ -->
+    <section class="tab-panel" id="panel-topology">
+      <div class="topo-layout">
+        <div class="topo-header">
+          <div class="topo-title-row">
+            <h2 class="topo-title">NEXCORP.LOCAL — Active Directory Topology</h2>
+            <div class="topo-controls">
+              <button class="topo-btn active-topo" id="topo-view-graph" onclick="setTopoView('graph')">Graph View</button>
+              <button class="topo-btn" id="topo-view-tree" onclick="setTopoView('tree')">Tree View</button>
+            </div>
+          </div>
+          <div class="topo-legend">
+            <span class="legend-item"><span class="legend-dot ld-dc"></span>Domain Controller</span>
+            <span class="legend-item"><span class="legend-dot ld-server"></span>Server</span>
+            <span class="legend-item"><span class="legend-dot ld-workstation"></span>Workstation</span>
+            <span class="legend-item"><span class="legend-dot ld-owned"></span>Compromised</span>
+            <span class="legend-item"><span class="legend-dot ld-path"></span>Attack Path</span>
+          </div>
+        </div>
+        <div class="topo-canvas-wrap">
+          <canvas id="topoCanvas"></canvas>
+          <div class="topo-node-tooltip" id="topoTooltip"></div>
+        </div>
+        <div class="topo-info-bar">
+          <div class="topo-stat"><span class="topo-stat-label">Domain</span><span class="topo-stat-val">NEXCORP.LOCAL</span></div>
+          <div class="topo-stat"><span class="topo-stat-label">Forest</span><span class="topo-stat-val">nexcorp.local</span></div>
+          <div class="topo-stat"><span class="topo-stat-label">Functional Level</span><span class="topo-stat-val">2016</span></div>
+          <div class="topo-stat"><span class="topo-stat-label">Trusts</span><span class="topo-stat-val">2 external</span></div>
+          <div class="topo-stat"><span class="topo-stat-label">Total Objects</span><span class="topo-stat-val">1,247</span></div>
+          <div class="topo-stat"><span class="topo-stat-label">Compromised</span><span class="topo-stat-val" style="color:#ff3c3c">14</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ KILL CHAIN TAB ═══════════════════ -->
+    <section class="tab-panel" id="panel-killchain">
+      <div class="kc-full-layout">
+        <div class="kc-timeline-header">
+          <h2 class="kc-title">OPERATION: PHANTOM CROWN — Kill Chain Timeline</h2>
+          <div class="kc-meta">
+            <span>Start: 2026-10-18 14:00 UTC</span><span>•</span>
+            <span>Operator: R3D_PHANTOM</span><span>•</span>
+            <span>Target: NEXCORP.LOCAL</span>
+          </div>
+        </div>
+        <div class="kc-timeline">
+          <div class="kc-phase-column kc-done">
+            <div class="kc-phase-header">
+              <div class="kc-phase-icon">🔍</div>
+              <div class="kc-phase-name">RECONNAISSANCE</div>
+              <div class="kc-phase-time">14:00–14:20 UTC</div>
+              <div class="kc-phase-badge kc-badge-done">COMPLETE</div>
+            </div>
+            <div class="kc-events">
+              <div class="kc-event kc-ev-done"><div class="kc-event-time">14:00</div><div class="kc-event-dot kc-dot-done"></div><div class="kc-event-content"><div class="kc-event-title">SharpHound Collection</div><div class="kc-event-detail">847 users, 243 computers enumerated</div></div></div>
+              <div class="kc-event kc-ev-done"><div class="kc-event-time">14:07</div><div class="kc-event-dot kc-dot-done"></div><div class="kc-event-content"><div class="kc-event-title">LDAP Anonymous Bind</div><div class="kc-event-detail">Domain object dump via port 389</div></div></div>
+              <div class="kc-event kc-ev-done"><div class="kc-event-time">14:15</div><div class="kc-event-dot kc-dot-done"></div><div class="kc-event-content"><div class="kc-event-title">SMB Share Recon</div><div class="kc-event-detail">SYSVOL readable — GPP files found</div></div></div>
+            </div>
+          </div>
+          <div class="kc-phase-column kc-done">
+            <div class="kc-phase-header">
+              <div class="kc-phase-icon">⚡</div>
+              <div class="kc-phase-name">INITIAL ACCESS</div>
+              <div class="kc-phase-time">14:10–14:25 UTC</div>
+              <div class="kc-phase-badge kc-badge-done">COMPLETE</div>
+            </div>
+            <div class="kc-events">
+              <div class="kc-event kc-ev-done"><div class="kc-event-time">14:10</div><div class="kc-event-dot kc-dot-done"></div><div class="kc-event-content"><div class="kc-event-title">AS-REP Roasting</div><div class="kc-event-detail">3 hashes extracted for offline cracking</div></div></div>
+              <div class="kc-event kc-ev-done"><div class="kc-event-time">14:17</div><div class="kc-event-dot kc-dot-done"></div><div class="kc-event-content"><div class="kc-event-title">Hash Cracked: jsmith</div><div class="kc-event-detail">Password: Welcome2024! — low-priv user</div></div></div>
+            </div>
+          </div>
+          <div class="kc-phase-column kc-active">
+            <div class="kc-phase-header">
+              <div class="kc-phase-icon">💻</div>
+              <div class="kc-phase-name">EXECUTION</div>
+              <div class="kc-phase-time">14:18 UTC — ONGOING</div>
+              <div class="kc-phase-badge kc-badge-active">IN PROGRESS</div>
+            </div>
+            <div class="kc-events">
+              <div class="kc-event kc-ev-done"><div class="kc-event-time">14:18</div><div class="kc-event-dot kc-dot-done"></div><div class="kc-event-content"><div class="kc-event-title">Kerberoasting — SVC_MSSQL</div><div class="kc-event-detail">RC4 TGS captured — cracked in 4 min</div></div></div>
+              <div class="kc-event kc-ev-done"><div class="kc-event-time">14:21</div><div class="kc-event-dot kc-dot-done"></div><div class="kc-event-content"><div class="kc-event-title">WMI Shell — SQL01</div><div class="kc-event-detail">Remote exec via SVC_MSSQL creds</div></div></div>
+              <div class="kc-event kc-ev-active"><div class="kc-event-time">14:22</div><div class="kc-event-dot kc-dot-pulse"></div><div class="kc-event-content"><div class="kc-event-title">LSASS Dump — SQL01</div><div class="kc-event-detail">Running... extracting credential material</div></div></div>
+            </div>
+          </div>
+          <div class="kc-phase-column kc-pending">
+            <div class="kc-phase-header">
+              <div class="kc-phase-icon">🔒</div>
+              <div class="kc-phase-name">PERSISTENCE</div>
+              <div class="kc-phase-time">Scheduled</div>
+              <div class="kc-phase-badge kc-badge-pending">PENDING</div>
+            </div>
+            <div class="kc-events">
+              <div class="kc-event kc-ev-pending"><div class="kc-event-time">—</div><div class="kc-event-dot kc-dot-pending"></div><div class="kc-event-content"><div class="kc-event-title">AdminSDHolder Backdoor</div><div class="kc-event-detail">Awaiting DA privileges</div></div></div>
+              <div class="kc-event kc-ev-pending"><div class="kc-event-time">—</div><div class="kc-event-dot kc-dot-pending"></div><div class="kc-event-content"><div class="kc-event-title">Golden Ticket Forge</div><div class="kc-event-detail">Requires krbtgt hash</div></div></div>
+            </div>
+          </div>
+          <div class="kc-phase-column kc-pending">
+            <div class="kc-phase-header">
+              <div class="kc-phase-icon">🚀</div>
+              <div class="kc-phase-name">PRIVILEGE ESCALATION</div>
+              <div class="kc-phase-time">Scheduled</div>
+              <div class="kc-phase-badge kc-badge-pending">PENDING</div>
+            </div>
+            <div class="kc-events">
+              <div class="kc-event kc-ev-pending"><div class="kc-event-time">—</div><div class="kc-event-dot kc-dot-pending"></div><div class="kc-event-content"><div class="kc-event-title">DCSync — krbtgt Dump</div><div class="kc-event-detail">Full domain compromise via DRSUAPI</div></div></div>
+            </div>
+          </div>
+          <div class="kc-phase-column kc-pending">
+            <div class="kc-phase-header">
+              <div class="kc-phase-icon">🌐</div>
+              <div class="kc-phase-name">LATERAL MOVEMENT</div>
+              <div class="kc-phase-time">Scheduled</div>
+              <div class="kc-phase-badge kc-badge-pending">PENDING</div>
+            </div>
+            <div class="kc-events">
+              <div class="kc-event kc-ev-pending"><div class="kc-event-time">—</div><div class="kc-event-dot kc-dot-pending"></div><div class="kc-event-content"><div class="kc-event-title">Pass-the-Hash — DC02</div><div class="kc-event-detail">Propagate to backup domain controller</div></div></div>
+            </div>
+          </div>
+          <div class="kc-phase-column kc-pending">
+            <div class="kc-phase-header">
+              <div class="kc-phase-icon">📤</div>
+              <div class="kc-phase-name">EXFILTRATION</div>
+              <div class="kc-phase-time">Scheduled</div>
+              <div class="kc-phase-badge kc-badge-pending">PENDING</div>
+            </div>
+            <div class="kc-events">
+              <div class="kc-event kc-ev-pending"><div class="kc-event-time">—</div><div class="kc-event-dot kc-dot-pending"></div><div class="kc-event-content"><div class="kc-event-title">NTDS.dit Extraction</div><div class="kc-event-detail">Full AD database dump via VSS</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ LOOT VAULT TAB ═══════════════════ -->
+    <section class="tab-panel" id="panel-loot">
+      <div class="loot-layout">
+        <div class="loot-header">
+          <h2 class="loot-title">LOOT VAULT — Captured Credentials & Intelligence</h2>
+          <div class="loot-actions">
+            <button class="loot-action-btn" onclick="exportLoot()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export Report
+            </button>
+          </div>
+        </div>
+        <div class="loot-grid">
+          <div class="panel-card loot-creds-panel">
+            <div class="panel-header">
+              <span class="panel-title">CAPTURED CREDENTIALS</span>
+              <span class="panel-badge">14 entries</span>
+            </div>
+            <div class="loot-table-wrap">
+              <table class="loot-table" id="lootTable">
+                <thead>
+                  <tr><th>USERNAME</th><th>DOMAIN</th><th>NTLM HASH / PASSWORD</th><th>TYPE</th><th>SOURCE</th><th>PRIVILEGES</th></tr>
+                </thead>
+                <tbody>
+                  <tr class="loot-row loot-high-priv"><td><span class="user-icon">👑</span> Administrator</td><td>NEXCORP</td><td class="hash-cell" onclick="copyHash(this)" title="Click to copy">aad3b435b51404ee:<span class="hash-val">31d6cfe0d16ae931...</span></td><td><span class="type-badge tb-ntlm">NTLM</span></td><td>LSASS Dump</td><td><span class="priv-badge pb-da">Domain Admin</span></td></tr>
+                  <tr class="loot-row loot-high-priv"><td><span class="user-icon">👑</span> krbtgt</td><td>NEXCORP</td><td class="hash-cell" onclick="copyHash(this)" title="Click to copy">aad3b435b51404ee:<span class="hash-val">58a478135a93ac3b...</span></td><td><span class="type-badge tb-ntlm">NTLM</span></td><td>DCSync</td><td><span class="priv-badge pb-da">KRBTGT</span></td></tr>
+                  <tr class="loot-row"><td><span class="user-icon">🔧</span> SVC_MSSQL</td><td>NEXCORP</td><td class="hash-cell" onclick="copyHash(this)" title="Click to copy"><span class="hash-val">P@ssw0rd2023!</span></td><td><span class="type-badge tb-plain">PLAIN</span></td><td>Kerberoast</td><td><span class="priv-badge pb-svc">Service Acct</span></td></tr>
+                  <tr class="loot-row"><td><span class="user-icon">👤</span> jsmith</td><td>NEXCORP</td><td class="hash-cell" onclick="copyHash(this)" title="Click to copy"><span class="hash-val">Welcome2024!</span></td><td><span class="type-badge tb-plain">PLAIN</span></td><td>AS-REP Roast</td><td><span class="priv-badge pb-user">Domain User</span></td></tr>
+                  <tr class="loot-row"><td><span class="user-icon">🔧</span> SVC_BACKUP</td><td>NEXCORP</td><td class="hash-cell" onclick="copyHash(this)" title="Click to copy">5f4dcc3b5aa76539:<span class="hash-val">9ea5f9f0768...</span></td><td><span class="type-badge tb-ntlm">NTLM</span></td><td>LSASS Dump</td><td><span class="priv-badge pb-svc">Backup Ops</span></td></tr>
+                  <tr class="loot-row"><td><span class="user-icon">👤</span> mjohnson</td><td>NEXCORP</td><td class="hash-cell" onclick="copyHash(this)" title="Click to copy">aad3b435b51404ee:<span class="hash-val">b4b9b02e6f09a9b...</span></td><td><span class="type-badge tb-ntlm">NTLM</span></td><td>LSASS Dump</td><td><span class="priv-badge pb-admin">Local Admin</span></td></tr>
+                  <tr class="loot-row"><td><span class="user-icon">👤</span> hwilson</td><td>NEXCORP</td><td class="hash-cell" onclick="copyHash(this)" title="Click to copy"><span class="hash-val">Summer2023#1</span></td><td><span class="type-badge tb-plain">PLAIN</span></td><td>GPP Password</td><td><span class="priv-badge pb-user">Domain User</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="loot-side">
+            <div class="panel-card">
+              <div class="panel-header"><span class="panel-title">KERBEROS TICKETS</span><span class="panel-badge">5 captured</span></div>
+              <div class="ticket-list">
+                <div class="ticket-item ticket-golden"><div class="ticket-icon">🌟</div><div class="ticket-info"><div class="ticket-name">Golden Ticket — Administrator</div><div class="ticket-detail">krbtgt NTLM · Valid 10 years · All SPNs</div></div><span class="ticket-type-badge ttb-golden">GOLDEN</span></div>
+                <div class="ticket-item ticket-silver"><div class="ticket-icon">⭐</div><div class="ticket-info"><div class="ticket-name">Silver Ticket — CIFS/SQL01</div><div class="ticket-detail">SVC_MSSQL hash · CIFS service access</div></div><span class="ticket-type-badge ttb-silver">SILVER</span></div>
+                <div class="ticket-item"><div class="ticket-icon">🎫</div><div class="ticket-info"><div class="ticket-name">TGT — jsmith@NEXCORP.LOCAL</div><div class="ticket-detail">Expires: 10h · Renewable: 7d</div></div><span class="ticket-type-badge ttb-tgt">TGT</span></div>
+                <div class="ticket-item"><div class="ticket-icon">🎟️</div><div class="ticket-info"><div class="ticket-name">TGS — HTTP/WEB02</div><div class="ticket-detail">SVC_WEB · Expires: 8h</div></div><span class="ticket-type-badge ttb-tgs">TGS</span></div>
+              </div>
+            </div>
+            <div class="panel-card">
+              <div class="panel-header"><span class="panel-title">KEY FINDINGS</span><span class="panel-badge" style="background:rgba(255,60,60,0.2);color:#ff3c3c;border-color:rgba(255,60,60,0.3)">CRITICAL</span></div>
+              <div class="finding-list">
+                <div class="finding-item fi-critical"><div class="finding-sev fsev-crit">CRIT</div><div class="finding-text"><div class="finding-title">Domain Admin Compromised</div><div class="finding-sub">Administrator NTLM hash extracted via DCSync</div></div></div>
+                <div class="finding-item fi-critical"><div class="finding-sev fsev-crit">CRIT</div><div class="finding-text"><div class="finding-title">KRBTGT Hash Exposed</div><div class="finding-sub">Enables unlimited Golden Ticket forgery</div></div></div>
+                <div class="finding-item fi-high"><div class="finding-sev fsev-high">HIGH</div><div class="finding-text"><div class="finding-title">12 Kerberoastable Accounts</div><div class="finding-sub">Weak RC4 encryption on SPN accounts</div></div></div>
+                <div class="finding-item fi-high"><div class="finding-sev fsev-high">HIGH</div><div class="finding-text"><div class="finding-title">GPP Password in SYSVOL</div><div class="finding-sub">AES-256 CPassword (MS14-025) exposed</div></div></div>
+                <div class="finding-item fi-medium"><div class="finding-sev fsev-med">MED</div><div class="finding-text"><div class="finding-title">Unconstrained Delegation</div><div class="finding-sub">3 servers with unconstrained Kerberos delegation</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Module Execution Modal -->
+  <div class="modal-overlay" id="moduleModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="modalTitle">EXECUTING MODULE</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-terminal" id="modalTerminal"></div>
+      <div class="modal-progress-wrap">
+        <div class="modal-progress-bar" id="modalProgressBar"></div>
+      </div>
+      <div class="modal-footer">
+        <span class="modal-status" id="modalStatus">Initializing...</span>
+        <button class="modal-abort" onclick="closeModal()">ABORT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="redteam.js"></script>
+</body>
+</html>
