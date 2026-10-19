@@ -39,6 +39,8 @@ An authorized, isolated Active Directory security lab designed to practice inter
 
 ### Lab Systems & Topology
 
+![Active Directory Lab Topology](docs/screenshots/00_lab_network_topology.jpg)
+
 | System Hostname | IPv4 Address | OS / Role | Assigned Accounts |
 | :--- | :--- | :--- | :--- |
 | **Nexora-Kali** | `10.10.10.10/24` | Kali Linux / Red Team Testing Workstation | `kali` (Operator) |
@@ -80,6 +82,8 @@ An authorized, isolated Active Directory security lab designed to practice inter
 - **Security Lesson:** Credentials hardcoded in configuration files accessible via open shares bypass network boundaries and grant immediate lateral/administrative privileges.
 - **MITRE ATT&CK:** [T1552.001](https://attack.mitre.org/techniques/T1552/001/) (Credentials in Files), [T1078.002](https://attack.mitre.org/techniques/T1078/002/) (Domain Accounts), [T1021.002](https://attack.mitre.org/techniques/T1021/002/) (SMB/Windows Admin Shares).
 
+![Path A: SMB Credential Exposure](docs/screenshots/01_credential_exposure_smb.jpg)
+
 ### 2. Path B — Kerberoasting
 - **Scenario:** Scanned Active Directory for accounts configured with Service Principal Names (SPNs).
 - **Finding:** Service account `NEXORA\svc-sql` possessed registered SPN `MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433`.
@@ -91,6 +95,8 @@ An authorized, isolated Active Directory security lab designed to practice inter
 - **Security Lesson:** Service accounts with SPNs must use complex, random passwords (25+ characters) or Group Managed Service Accounts (gMSAs) with AES encryption to prevent offline cracking.
 - **MITRE ATT&CK:** [T1558.003](https://attack.mitre.org/techniques/T1558/003/) (Steal or Forge Kerberos Tickets: Kerberoasting), [T1110.002](https://attack.mitre.org/techniques/T1110/002/) (Password Cracking).
 
+![Path B: Hashcat Kerberoasting Password Cracking](docs/screenshots/02_hashcat_kerberoast.jpg)
+
 ### 3. Path C — Active Directory ACL Abuse
 - **Scenario:** Ingested domain object permissions into BloodHound Community Edition using SharpHound.
 - **Finding:** Discovered that a standard delegated group had `GenericAll` rights over account `NEXORA\svc-sql`.
@@ -101,6 +107,8 @@ An authorized, isolated Active Directory security lab designed to practice inter
   - Account was confirmed as a member of the built-in high-privilege group `Server Operators`, granting full administrative management on domain servers.
 - **Security Lesson:** Misconfigured Active Directory object permissions create indirect privilege escalation chains that often evade perimeter defenses.
 - **MITRE ATT&CK:** [T1098](https://attack.mitre.org/techniques/T1098/) (Account Manipulation), [T1069.002](https://attack.mitre.org/techniques/T1069/002/) (Permission Groups Discovery: Domain Groups).
+
+![Path C: BloodHound AD ACL Abuse Attack Path](docs/screenshots/03_bloodhound_acl_path.jpg)
 
 ---
 
