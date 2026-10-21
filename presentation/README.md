@@ -18,17 +18,16 @@ This document outlines the slide structure and executive findings presented in `
   1. Plaintext credentials stored on accessible SMB shares.
   2. Weak Service Principal Name (SPN) passwords vulnerable to offline Kerberoasting.
   3. Excessive Active Directory object discretionary permissions (`GenericAll`).
-- **Highest Impact:** Complete Active Directory Domain Controller (`Nexora-DC01`) compromise achievable from an unprivileged domain user foothold.
+- **Highest Impact:** Complete Active Directory Domain Controller (`NEXORA-DC` - `192.168.23.129`) compromise achievable from an unprivileged domain user foothold.
 
 ---
 
 ### Slide 3: Lab Architecture & Systems Topology
-- Overview of isolated VirtualBox private subnet (`10.10.10.0/24`):
-  - `Nexora-Kali` (`10.10.10.10`)
-  - `Nexora-DC01` (`10.10.10.20`)
-  - `Nexora-WS-HR01` (`10.10.10.30`)
-  - `Nexora-WS-DEV01` (`10.10.10.40`)
-  - `Nexora-SRV-APP01` (`10.10.10.50`)
+- Overview of isolated private subnet (`192.168.23.0/24`):
+  - `Windows Server 2022 — NEXORA-DC` (`192.168.23.129`)
+  - `Windows 10 Client` (`192.168.23.130`)
+  - `Kali Linux` (`192.168.23.131`)
+  - `Domain`: `nexora.local` (NetBIOS: `NEXORA`)
 
 ---
 

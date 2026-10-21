@@ -432,11 +432,10 @@ function exportLoot() {
 }
 
 const TOPO_NODES = [
-  { id: 'kali',  label: 'Nexora-Kali',    sublabel: 'Attacker (Kali)', type: 'external',    owned: true,  x: 0.15, y: 0.20, info: 'Attacker Workstation\nIP: 10.10.10.10/24\nTools: Impacket, BloodHound, Hashcat' },
-  { id: 'dc01',  label: 'Nexora-DC01',    sublabel: 'Domain Controller', type: 'dc',       owned: true,  x: 0.50, y: 0.15, info: 'Windows Server 2022 DC\nDomain: nexora.local\nIP: 10.10.10.20/24\nRole: Kerberos KDC, DNS' },
-  { id: 'srv01', label: 'Nexora-SRV-APP01', sublabel: 'App/File Server', type: 'server',  owned: true,  x: 0.80, y: 0.25, info: 'Windows Server 2022\nIP: 10.10.10.50/24\nShare: \\\\Nexora-SRV-APP01\\NexoraApp\nSPN: MSSQLSvc' },
-  { id: 'ws01',  label: 'Nexora-WS-HR01', sublabel: 'HR Workstation', type: 'workstation', owned: true,  x: 0.35, y: 0.65, info: 'Windows 10 Enterprise\nUser: NEXORA\\jsmith\nIP: 10.10.10.30/24\nInitial access foothold' },
-  { id: 'ws02',  label: 'Nexora-WS-DEV01', sublabel: 'Dev Workstation', type: 'workstation', owned: true, x: 0.65, y: 0.65, info: 'Windows 10 Enterprise\nUser: NEXORA\\dev_user\nIP: 10.10.10.40/24\nMember: IT-Support (GenericAll)' },
+  { id: 'kali',  label: 'Nexora-Kali',    sublabel: 'Attacker (Kali)', type: 'external',    owned: true,  x: 0.15, y: 0.20, info: 'Attacker Workstation\nIP: 192.168.23.131/24\nTools: Impacket, BloodHound, Hashcat' },
+  { id: 'dc01',  label: 'NEXORA-DC',      sublabel: 'Domain Controller', type: 'dc',       owned: true,  x: 0.50, y: 0.15, info: 'Windows Server 2022 DC\nDomain: nexora.local\nIP: 192.168.23.129/24\nRole: Kerberos KDC, DNS' },
+  { id: 'ws01',  label: 'Windows 10 Client', sublabel: 'DESKTOP-M8PCMPL', type: 'workstation', owned: true,  x: 0.40, y: 0.65, info: 'Windows 10 Client\nHostname: DESKTOP-M8PCMPL\nIP: 192.168.23.130/24\nInitial access & testing' },
+  { id: 'srv01', label: 'Nexora-SRV-APP01', sublabel: 'App/File Host', type: 'server',  owned: true,  x: 0.80, y: 0.25, info: 'Windows Server 2022\nIP: 192.168.23.129/24\nShare: \\\\NEXORA-DC\\NexoraApp\nSPN: MSSQLSvc' },
 ];
 
 const TOPO_EDGES = [

@@ -9,3 +9,5 @@ Active Directory ACL Abuse,T1069.002,Permission Groups Discovery: Domain Groups,
 Active Directory ACL Abuse,T1098,Account Manipulation,GenericAll permission abused to reset the password of target account svc-sql.,Direct mapping,https://attack.mitre.org/techniques/T1098/
 Active Directory ACL Abuse,T1078.002,Valid Accounts: Domain Accounts,Authenticated with modified credentials for account svc-sql.,Direct mapping,https://attack.mitre.org/techniques/T1078/002/
 Active Directory ACL Abuse,T1068,Exploitation for Privilege Escalation,Target account was verified as member of Server Operators on domain controller.,Direct mapping,https://attack.mitre.org/techniques/T1068/
+Credential Exposure,T1135,Network Share Discovery,Enumerated readable SMB shares across domain target NEXORA-DC.,Direct mapping,https://attack.mitre.org/techniques/T1135/
+Credential Exposure,T1003.003,OS Credential Dumping: NTDS,Extracted Administrator and krbtgt NTLM password hashes via DCSync SecretsDump.,Direct mapping,https://attack.mitre.org/techniques/T1003/003/

@@ -30,43 +30,40 @@ An authorized, isolated Active Directory security lab designed to practice inter
 ## Lab Environment
 
 - **Domain:** `nexora.local` (NetBIOS: `NEXORA`)
-- **Hypervisor:** Oracle VirtualBox (Isolated Host-Only Private Network)
-- **Attacker System:** Kali Linux 2024.x (`10.10.10.10/24`)
-- **Target Systems:** Windows Server 2022 & Windows 10/11 Enterprise Workstations
+- **Hypervisor:** VMware Workstation / Oracle VirtualBox (Isolated Host-Only Private Network `192.168.23.0/24`)
+- **Attacker System:** Kali Linux (`192.168.23.131`)
+- **Target Systems:** Windows Server 2022 (`NEXORA-DC`) & Windows 10 Client (`DESKTOP-M8PCMPL`)
 - **Tooling:** Impacket suite, BloodHound Community Edition & SharpHound, Hashcat, Nmap, PowerView, and Native Windows Active Directory tools.
 
-> **Safety & Scope Boundary:** All testing was strictly conducted within an isolated VirtualBox host-only subnet with no internet routing or external bridge interfaces. All accounts and credentials were created exclusively for this lab simulation.
+> **Safety & Scope Boundary:** All testing was strictly conducted within an isolated host-only subnet (`192.168.23.0/24`) with no internet routing or external bridge interfaces. All accounts and credentials were created exclusively for this lab simulation.
 
-### Lab Systems & Topology
+### Lab Systems & Network Register
 
-![Active Directory Lab Topology](docs/screenshots/00_lab_network_topology.jpg)
-
-| System Hostname | IPv4 Address | OS / Role | Assigned Accounts |
-| :--- | :--- | :--- | :--- |
-| **Nexora-Kali** | `10.10.10.10/24` | Kali Linux / Red Team Testing Workstation | `kali` (Operator) |
-| **Nexora-DC01** | `10.10.10.20/24` | Windows Server 2022 / Active Directory Domain Controller | `Administrator`, `krbtgt` |
-| **Nexora-WS-HR01** | `10.10.10.30/24` | Windows 10 Enterprise / HR Workstation | `NEXORA\jsmith` |
-| **Nexora-WS-DEV01** | `10.10.10.40/24` | Windows 10 Enterprise / Developer Workstation | `NEXORA\dev_user` |
-| **Nexora-SRV-APP01**| `10.10.10.50/24` | Windows Server 2022 / Application & Database Host | `NEXORA\svc_backup`, `NEXORA\svc-sql` |
+| Machine | Role / Hostname | IP Address | Subnet Mask | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Windows Server 2022 — NEXORA-DC** | `NEXORA-DC` / Domain Controller | `192.168.23.129` | `255.255.255.0` | Active Directory Domain Controller, Kerberos KDC, DNS (`nexora.local`) |
+| **Windows 10 Client** | `DESKTOP-M8PCMPL` / Domain Client | `192.168.23.130` | `255.255.255.0` | Domain Client Workstation (`NEXORA\jsmith`, `NEXORA\dev_user`) |
+| **Kali Linux** | `Nexora-Kali` / Attacker Workstation | `192.168.23.131` | `255.255.255.0` | Red Team testing, enumeration, and exploitation platform |
+| **Active Directory Domain** | `nexora.local` | — | — | Active Directory Security Forest (NetBIOS: `NEXORA`) |
 
 ---
 
 ## Attack Paths and Evidence-Backed Results
 
 ```
-[ Nexora-Kali (10.10.10.10) ]
+[ Kali Linux (192.168.23.131) ]
         │
-        ├─── Path A: Credential Exposure ───► [ Nexora-SRV-APP01 (10.10.10.50) ]
-        │    • SMB share \\Nexora-SRV-APP01\NexoraApp
+        ├─── Path A: Credential Exposure ───► [ NEXORA-DC / Workstation (192.168.23.129) ]
+        │    • SMB share \\NEXORA-DC\NexoraApp
         │    • Plaintext app.ini contains svc_backup
         │    • Validate administrative C$ access
         │
-        ├─── Path B: Kerberoasting ─────────► [ Nexora-DC01 (10.10.10.20) ]
-        │    • SPN: MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433
+        ├─── Path B: Kerberoasting ─────────► [ NEXORA-DC (192.168.23.129) ]
+        │    • SPN: MSSQLSvc/NEXORA-DC.nexora.local:1433
         │    • Kerberos TGS etype 23 (RC4-HMAC) captured
         │    • Hashcat Mode 13100 recovered 1/1 target hash
         │
-        └─── Path C: AD ACL Abuse ──────────► [ Active Directory Forest ]
+        └─── Path C: AD ACL Abuse ──────────► [ Active Directory Forest (nexora.local) ]
              • BloodHound graph: GenericAll over svc-sql
              • Controlled password reset via RPC/LDAP
              • Elevated privileges via Server Operators membership
@@ -116,9 +113,11 @@ An authorized, isolated Active Directory security lab designed to practice inter
 
 | Tactic | ATT&CK ID | Technique Name | Lab Evidence / Observation |
 | :--- | :--- | :--- | :--- |
+| **Discovery** | `T1135` | Network Share Discovery | Enumerated accessible shares (`NexoraApp`, `C$`) on `NEXORA-DC` |
 | **Credential Access** | `T1552.001` | Credentials in Files | Plaintext password found in `app.ini` on SMB share |
 | **Defense Evasion** | `T1078.002` | Valid Accounts: Domain Accounts | Legitimate service credentials used for lateral movement |
-| **Lateral Movement** | `T1021.002` | Remote Services: SMB Admin Shares | Validated administrative access to `SRV-APP01\C$` |
+| **Lateral Movement** | `T1021.002` | Remote Services: SMB Admin Shares | Validated administrative access to `NEXORA-DC\C$` |
+| **Credential Access** | `T1003.003` | OS Credential Dumping: NTDS | Executed DCSync extracting `Administrator` & `krbtgt` hashes |
 | **Credential Access** | `T1558.003` | Kerberoasting (TGS Request) | Extracted RC4 TGS for `MSSQLSvc` account |
 | **Credential Access** | `T1110.002` | Password Cracking | Recovered 1/1 hash offline using Hashcat mode 13100 |
 | **Discovery** | `T1069.002` | Domain Groups Discovery | BloodHound & PowerView ACL enumeration |

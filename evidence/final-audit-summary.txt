@@ -1,21 +1,21 @@
 ================================================================================
 NEXORA SYSTEMS — AD RED TEAM ENGAGEMENT AUDIT SUMMARY
 Target Domain: nexora.local | NetBIOS: NEXORA
-Lead Operator: Red Team Emulation Unit (Kali-10.10.10.10)
-Lab Isolation: Private VirtualBox Network (No external routing)
+Lead Operator: Red Team Emulation Unit (Kali-192.168.23.131)
+Lab Isolation: Private Host-Only Subnet 192.168.23.0/24 (No external routing)
 ================================================================================
 
 [AUDIT SUMMARY — ATTACK PATHS]
 
 1. CREDENTIAL EXPOSURE (Path A)
-   - Vulnerable Share: \\Nexora-SRV-APP01\NexoraApp
+   - Vulnerable Share: \\NEXORA-DC\NexoraApp
    - Target File: app.ini (SHA-256: 9e71b2d308f234aa6b189a03b578c7a82b2046db419c8309df559c57d8139591)
    - Exposed Account: NEXORA\svc_backup
-   - Validation: Administrative SMB access confirmed to \\Nexora-SRV-APP01\C$
+   - Validation: Administrative SMB access confirmed to \\NEXORA-DC\C$ & DCSync Validated
    - Status: VERIFIED & AUDITED
 
 2. KERBEROASTING (Path B)
-   - Target Service: MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433
+   - Target Service: MSSQLSvc/NEXORA-DC.nexora.local:1433
    - Target Account: NEXORA\svc-sql
    - Ticket Format: Kerberos 5 TGS-REP etype 23 (RC4-HMAC-MD5)
    - Auditing Tool: Hashcat v6.2 (Mode 13100)
@@ -28,7 +28,7 @@ Lab Isolation: Private VirtualBox Network (No external routing)
    - Insecure ACE: GenericAll rights over NEXORA\svc-sql granted to delegated group
    - Action: Controlled password reset executed via RPC/LDAP
    - Escalation: Target verified as member of NEXORA\Server Operators
-   - Impact: SYSTEM privileges achievable on Domain Controller (Nexora-DC01)
+   - Impact: SYSTEM privileges achievable on Domain Controller (NEXORA-DC - 192.168.23.129)
    - Status: VERIFIED & AUDITED
 
 ================================================================================
