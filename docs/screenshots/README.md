@@ -1,37 +1,74 @@
-# Nexora Systems — Lab Evidence Screenshots Gallery
+# Nexora Active Directory Lab — Assessment Screenshots & Evidence Gallery
 
-This directory contains technical screenshots and visual evidence captured during the execution of the active directory simulation lab on `nexora.local`.
+This directory contains technical screenshots and visual evidence captures from the **Nexora Active Directory Lab — Penetration Testing & Security Configuration Review** (Controlled Lab Assessment Report).
 
----
-
-### 1. Architecture & Network Topology
-![Lab Topology](00_lab_network_topology.jpg)
-
-- **Description:** Complete network schema for the isolated private subnet (`192.168.23.0/24`) connecting Kali Linux (`192.168.23.131`), Windows Server 2022 NEXORA-DC (`192.168.23.129`), and Windows 10 Client (`192.168.23.130`) on domain `nexora.local`.
+Full report reference: [Nexora_AD_Lab_Assessment_Report.pdf](../Nexora_AD_Lab_Assessment_Report.pdf)
 
 ---
 
-### 2. Path A: Credential Exposure & Administrative SMB Access
+### Screenshot A-1: DNS Resolution & Domain Controller Reachability
+![Screenshot A-1](screenshot_a1_dns_nslookup.jpeg)
 
-![Path A SMB Exposure](01_credential_exposure_smb.jpg)
-
-- **Techniques:** MITRE `T1552.001` (Credentials in Files), `T1078.002` (Domain Accounts), `T1021.002` (SMB Admin Shares).
-- **Description:** Impacket's `smbclient.py` retrieving `app.ini` from share `\\Nexora-SRV-APP01\NexoraApp` and NetExec validating administrative read/write privileges on `ADMIN$` and `C$`.
-
----
-
-### 3. Path B: Offline Kerberoasting Auditing with Hashcat
-
-![Path B Hashcat](02_hashcat_kerberoast.jpg)
-
-- **Techniques:** MITRE `T1558.003` (Kerberoasting), `T1110.002` (Password Cracking).
-- **Description:** Hashcat v6.2 running Mode 13100 (Kerberos 5, etype 23, TGS-REP) against `svc-sql` ticket, reaching status `Cracked` with 100% digest recovery.
+- **Source Capture:** `IMG_3CCA7AD7-5762-4F16-8707-54586DF837A1.jpeg`
+- **Scope Item:** Network Reachability & Active Directory DNS resolution (Evidence `E-06`).
+- **Command Executed:**
+  ```powershell
+  nslookup nexora.local 192.168.23.129
+  ```
+- **Observed Result:** Validated that Domain Controller `NEXORA-DC` (`192.168.23.129`) responds to DNS queries for `nexora.local` and resolves to address `192.168.23.129`.
 
 ---
 
-### 4. Path C: BloodHound Active Directory ACL Abuse
+### Screenshot A-2: Windows Client TCP/IP Configuration
+![Screenshot A-2](screenshot_a2_client_ipconfig.jpeg)
 
-![Path C BloodHound](03_bloodhound_acl_path.jpg)
+- **Source Capture:** `IMG_D72F33A9-311C-4F3A-A078-D93D2B949758.jpeg`
+- **Scope Item:** Client Workstation Network Configuration (`DESKTOP-M8PCMPL`).
+- **Command Executed:**
+  ```cmd
+  ipconfig /all
+  ```
+- **Observed Result:** Confirmed Windows Client joined to domain `nexora.local` on the isolated VMware subnet (`192.168.23.130/24`) pointing to DNS server `192.168.23.129`.
 
-- **Techniques:** MITRE `T1098` (Account Manipulation), `T1069.002` (Domain Groups Discovery).
-- **Description:** BloodHound Community Edition visualization showing the attack path: `dev_user` → `GenericAll` → `svc-sql` → `MemberOf` → `Server Operators` → `Nexora-DC01`.
+---
+
+### Screenshot A-3: Domain Controller Interface Configuration
+![Screenshot A-3](screenshot_a3_dc_ipconfig.jpeg)
+
+- **Source Capture:** `IMG_C1D5805B-26F2-4E3A-BE89-EA2D6B36361A.jpeg`
+- **Scope Item:** Domain Controller Network Adapter Settings (`NEXORA-DC`).
+- **Command Executed:**
+  ```cmd
+  ipconfig /all
+  ```
+- **Observed Result:** Windows Server 2022 Datacenter interface `Ethernet0` configured with static IP `192.168.23.129`, subnet mask `255.255.255.0`, and primary DNS pointing to local loopback / `127.0.0.1`.
+
+---
+
+### Screenshot A-4: Windows 10 Client Network Adapter Properties
+![Screenshot A-4](screenshot_a4_adapter_ipv4_config.jpeg)
+
+- **Source Capture:** `IMG_E3B92702-DC46-439F-958D-E26AF666F5C4.jpeg`
+- **Scope Item:** IPv4 Properties & Static IP Assignment on Client Workstation.
+- **Observed Result:** Graphic User Interface (GUI) verification of Internet Protocol Version 4 (TCP/IPv4) properties on `DESKTOP-M8PCMPL`, showing manual configuration for host-only private networking without external gateway routing.
+
+---
+
+### Screenshot A-5: Advanced TCP/IP DNS Configuration & Suffix Settings
+![Screenshot A-5](screenshot_a5_advanced_dns_settings.jpeg)
+
+- **Source Capture:** `IMG_0E4A481A-D9DC-4F60-A83E-4BA40A2DB6EA.jpeg`
+- **Scope Item:** DNS Suffix Search List & Dynamic Registration.
+- **Observed Result:** Advanced TCP/IP Settings window verifying primary DNS server list (`192.168.23.129`), DNS suffix append list (`nexora.local`), and domain registration controls.
+
+---
+
+### Summary of Assessment Findings Supported by Evidence
+
+| Finding ID | Title | Rating | Evidence / Impact Summary |
+| :--- | :--- | :--- | :--- |
+| **F-01** | No account-lockout threshold reported | **Medium / Hardening** | Effective password-policy query reported threshold: `None`. Default Domain Policy: `LockoutBadCount=0`. |
+| **F-02** | Anonymous SMB session accepted; data denied | **Informational** | Null Auth accepted, but `IPC$` and `SYSVOL` connections returned `NT_STATUS_ACCESS_DENIED`. |
+| **F-03** | SMB signing required; SMBv1 disabled | **Positive Control** | `EnableSMB1Protocol=False`, `RequireSecuritySignature=True`, signing required. |
+| **F-04** | Authenticated user reads standard SYSVOL | **Expected / Review** | Standard policy folders accessible; scripts directories verified empty of hardcoded secrets. |
+| **F-05** | DC policy template specifies LDAP signing | **Positive Indication** | Default Domain Controllers Policy contains `LDAPServerIntegrity=4,1`. |

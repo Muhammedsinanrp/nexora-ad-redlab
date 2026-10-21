@@ -77,13 +77,13 @@ An authorized, isolated Active Directory security lab designed to practice inter
   - Authenticated via Impacket (`smbclient.py`) to confirm valid domain credentials.
   - Successfully validated read/write access to administrative share `\\Nexora-SRV-APP01\C$`.
 - **Security Lesson:** Credentials hardcoded in configuration files accessible via open shares bypass network boundaries and grant immediate lateral/administrative privileges.
-- **MITRE ATT&CK:** [T1552.001](https://attack.mitre.org/techniques/T1552/001/) (Credentials in Files), [T1078.002](https://attack.mitre.org/techniques/T1078/002/) (Domain Accounts), [T1021.002](https://attack.mitre.org/techniques/T1021/002/) (SMB/Windows Admin Shares).
+- **MITRE ATT&CK:** [T1552.001](https://attack.mitre.org/techniques/T1552/001/) (Credentials in Files), [T1078.002](https://attack.mitre.org/techniques/T1078/002/) (Domain Accounts), [T1021.002](https://attack.mitre.org/techniques/T1021/002/) (SMB/Windows Admin Shares), [T1003.003](https://attack.mitre.org/techniques/T1003/003/) (NTDS Dumping).
 
-![Path A: SMB Credential Exposure](docs/screenshots/01_credential_exposure_smb.jpg)
+![Evidence Capture A-2: Client Network Configuration](docs/screenshots/screenshot_a2_client_ipconfig.jpeg)
 
 ### 2. Path B — Kerberoasting
 - **Scenario:** Scanned Active Directory for accounts configured with Service Principal Names (SPNs).
-- **Finding:** Service account `NEXORA\svc-sql` possessed registered SPN `MSSQLSvc/Nexora-SRV-APP01.nexora.local:1433`.
+- **Finding:** Service account `NEXORA\svc-sql` possessed registered SPN `MSSQLSvc/NEXORA-DC.nexora.local:1433`.
 - **Validation:**
   - Requested Kerberos TGS ticket for the service account using Impacket's `GetUserSPNs.py`.
   - Extracted ticket encrypted with weak RC4-HMAC (etype 23).
@@ -92,7 +92,7 @@ An authorized, isolated Active Directory security lab designed to practice inter
 - **Security Lesson:** Service accounts with SPNs must use complex, random passwords (25+ characters) or Group Managed Service Accounts (gMSAs) with AES encryption to prevent offline cracking.
 - **MITRE ATT&CK:** [T1558.003](https://attack.mitre.org/techniques/T1558/003/) (Steal or Forge Kerberos Tickets: Kerberoasting), [T1110.002](https://attack.mitre.org/techniques/T1110/002/) (Password Cracking).
 
-![Path B: Hashcat Kerberoasting Password Cracking](docs/screenshots/02_hashcat_kerberoast.jpg)
+![Evidence Capture A-3: DC Network Configuration](docs/screenshots/screenshot_a3_dc_ipconfig.jpeg)
 
 ### 3. Path C — Active Directory ACL Abuse
 - **Scenario:** Ingested domain object permissions into BloodHound Community Edition using SharpHound.
@@ -105,7 +105,7 @@ An authorized, isolated Active Directory security lab designed to practice inter
 - **Security Lesson:** Misconfigured Active Directory object permissions create indirect privilege escalation chains that often evade perimeter defenses.
 - **MITRE ATT&CK:** [T1098](https://attack.mitre.org/techniques/T1098/) (Account Manipulation), [T1069.002](https://attack.mitre.org/techniques/T1069/002/) (Permission Groups Discovery: Domain Groups).
 
-![Path C: BloodHound AD ACL Abuse Attack Path](docs/screenshots/03_bloodhound_acl_path.jpg)
+![Evidence Capture A-1: DNS Resolution](docs/screenshots/screenshot_a1_dns_nslookup.jpeg)
 
 ---
 
@@ -152,9 +152,15 @@ An authorized, isolated Active Directory security lab designed to practice inter
 Nexora-AD-Red-Team-Lab/
 ├── README.md                                  # Executive summary & engagement overview
 ├── docs/
-│   ├── Lab-Manual.md                          # VirtualBox network setup & VM specifications
+│   ├── Lab-Manual.md                          # VMware network setup & VM specifications
 │   ├── Attack-Scenario-Manual.md              # Detailed procedure logs for Paths A, B, and C
-│   └── Nexora_Red_Team_Penetration_Test_Report.docx # Formal enterprise security assessment report
+│   ├── Nexora_AD_Lab_Assessment_Report.pdf    # Master Penetration Testing & Configuration Review Report
+│   └── screenshots/                           # Appendix A evidence screenshots gallery
+│       ├── screenshot_a1_dns_nslookup.jpeg    # DNS resolution & reachability check
+│       ├── screenshot_a2_client_ipconfig.jpeg # Windows 10 Client network configuration
+│       ├── screenshot_a3_dc_ipconfig.jpeg     # Windows Server 2022 DC adapter settings
+│       ├── screenshot_a4_adapter_ipv4_config.jpeg # Client IPv4 properties
+│       └── screenshot_a5_advanced_dns_settings.jpeg # Advanced DNS suffix settings
 ├── mitre/
 │   └── Nexora_MITRE_ATT&CK_Mapping.csv        # Comprehensive ATT&CK matrix mapping
 ├── evidence/
