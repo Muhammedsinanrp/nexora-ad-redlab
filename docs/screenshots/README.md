@@ -1,74 +1,191 @@
-# Nexora Active Directory Lab — Assessment Screenshots & Evidence Gallery
+# Nexora Systems — Lab Evidence Screenshots Gallery
 
-This directory contains technical screenshots and visual evidence captures from the **Nexora Active Directory Lab — Penetration Testing & Security Configuration Review** (Controlled Lab Assessment Report).
+This directory contains the full visual evidence library captured across the **Nexora Active Directory Red Team Simulation Lab** — covering reconnaissance, attack execution, and full domain compromise.
 
-Full report reference: [Nexora_AD_Lab_Assessment_Report.pdf](../Nexora_AD_Lab_Assessment_Report.pdf)
+Full assessment report reference: [Nexora_AD_Lab_Assessment_Report.pdf](../Nexora_AD_Lab_Assessment_Report.pdf)
 
 ---
+
+## ⚙️ Appendix A — Network Configuration Evidence
 
 ### Screenshot A-1: DNS Resolution & Domain Controller Reachability
-![Screenshot A-1](screenshot_a1_dns_nslookup.jpeg)
-
-- **Source Capture:** `IMG_3CCA7AD7-5762-4F16-8707-54586DF837A1.jpeg`
-- **Scope Item:** Network Reachability & Active Directory DNS resolution (Evidence `E-06`).
-- **Command Executed:**
-  ```powershell
-  nslookup nexora.local 192.168.23.129
-  ```
-- **Observed Result:** Validated that Domain Controller `NEXORA-DC` (`192.168.23.129`) responds to DNS queries for `nexora.local` and resolves to address `192.168.23.129`.
+![Screenshot A-1: DNS Resolution](screenshot_a1_dns_nslookup.jpeg)
+- **MITRE:** `T1590` (Gather Victim Network Info)
+- **Evidence:** `nslookup nexora.local 192.168.23.129` confirms DC reachability on isolated subnet.
 
 ---
 
-### Screenshot A-2: Windows Client TCP/IP Configuration
-![Screenshot A-2](screenshot_a2_client_ipconfig.jpeg)
-
-- **Source Capture:** `IMG_D72F33A9-311C-4F3A-A078-D93D2B949758.jpeg`
-- **Scope Item:** Client Workstation Network Configuration (`DESKTOP-M8PCMPL`).
-- **Command Executed:**
-  ```cmd
-  ipconfig /all
-  ```
-- **Observed Result:** Confirmed Windows Client joined to domain `nexora.local` on the isolated VMware subnet (`192.168.23.130/24`) pointing to DNS server `192.168.23.129`.
+### Screenshot A-2: Windows 10 Client Network Configuration
+![Screenshot A-2: Client ipconfig](screenshot_a2_client_ipconfig.jpeg)
+- **Evidence:** `DESKTOP-M8PCMPL` (`192.168.23.130`) joined to `nexora.local`, DNS pointing to `192.168.23.129`.
 
 ---
 
 ### Screenshot A-3: Domain Controller Interface Configuration
-![Screenshot A-3](screenshot_a3_dc_ipconfig.jpeg)
-
-- **Source Capture:** `IMG_C1D5805B-26F2-4E3A-BE89-EA2D6B36361A.jpeg`
-- **Scope Item:** Domain Controller Network Adapter Settings (`NEXORA-DC`).
-- **Command Executed:**
-  ```cmd
-  ipconfig /all
-  ```
-- **Observed Result:** Windows Server 2022 Datacenter interface `Ethernet0` configured with static IP `192.168.23.129`, subnet mask `255.255.255.0`, and primary DNS pointing to local loopback / `127.0.0.1`.
+![Screenshot A-3: DC ipconfig](screenshot_a3_dc_ipconfig.jpeg)
+- **Evidence:** `NEXORA-DC` (`192.168.23.129`) Windows Server 2022 Datacenter static IP confirmed.
 
 ---
 
-### Screenshot A-4: Windows 10 Client Network Adapter Properties
-![Screenshot A-4](screenshot_a4_adapter_ipv4_config.jpeg)
-
-- **Source Capture:** `IMG_E3B92702-DC46-439F-958D-E26AF666F5C4.jpeg`
-- **Scope Item:** IPv4 Properties & Static IP Assignment on Client Workstation.
-- **Observed Result:** Graphic User Interface (GUI) verification of Internet Protocol Version 4 (TCP/IPv4) properties on `DESKTOP-M8PCMPL`, showing manual configuration for host-only private networking without external gateway routing.
+### Screenshot A-4: Windows 10 Client IPv4 Adapter Properties
+![Screenshot A-4: IPv4 Properties](screenshot_a4_adapter_ipv4_config.jpeg)
+- **Evidence:** GUI verification of client static IP assignment on host-only private subnet.
 
 ---
 
-### Screenshot A-5: Advanced TCP/IP DNS Configuration & Suffix Settings
-![Screenshot A-5](screenshot_a5_advanced_dns_settings.jpeg)
-
-- **Source Capture:** `IMG_0E4A481A-D9DC-4F60-A83E-4BA40A2DB6EA.jpeg`
-- **Scope Item:** DNS Suffix Search List & Dynamic Registration.
-- **Observed Result:** Advanced TCP/IP Settings window verifying primary DNS server list (`192.168.23.129`), DNS suffix append list (`nexora.local`), and domain registration controls.
+### Screenshot A-5: Advanced TCP/IP DNS Configuration
+![Screenshot A-5: DNS Suffix Settings](screenshot_a5_advanced_dns_settings.jpeg)
+- **Evidence:** DNS suffix `nexora.local` appended; DNS server list `192.168.23.129` confirmed.
 
 ---
 
-### Summary of Assessment Findings Supported by Evidence
+## ⚔️ Attack Path Evidence
 
-| Finding ID | Title | Rating | Evidence / Impact Summary |
-| :--- | :--- | :--- | :--- |
-| **F-01** | No account-lockout threshold reported | **Medium / Hardening** | Effective password-policy query reported threshold: `None`. Default Domain Policy: `LockoutBadCount=0`. |
-| **F-02** | Anonymous SMB session accepted; data denied | **Informational** | Null Auth accepted, but `IPC$` and `SYSVOL` connections returned `NT_STATUS_ACCESS_DENIED`. |
-| **F-03** | SMB signing required; SMBv1 disabled | **Positive Control** | `EnableSMB1Protocol=False`, `RequireSecuritySignature=True`, signing required. |
-| **F-04** | Authenticated user reads standard SYSVOL | **Expected / Review** | Standard policy folders accessible; scripts directories verified empty of hardcoded secrets. |
-| **F-05** | DC policy template specifies LDAP signing | **Positive Indication** | Default Domain Controllers Policy contains `LDAPServerIntegrity=4,1`. |
+### Screenshot 1: Helpdesk / Initial Domain User Context
+![Helpdesk User — Initial Access](attack_15_helpdesk_user.png)
+- **Attack Path:** Initial access user context establishment.
+- **MITRE:** `T1078.002` (Valid Accounts: Domain Accounts)
+- **Evidence:** Helpdesk / low-privilege domain account used as initial foothold into `nexora.local`.
+
+---
+
+### Screenshot 2: Ping DC01 from Kali — Network Reachability
+![Ping DC01 from Kali](attack_09_ping_dc01_from_kali.png)
+- **Attack Path:** Attacker → Target Network Reachability Test
+- **MITRE:** `T1016` (System Network Configuration Discovery), `T1590`
+- **Evidence:** Kali Linux (`192.168.23.131`) confirms ICMP reachability to `NEXORA-DC` (`192.168.23.129`).
+
+---
+
+### Screenshot 3: Password Policy Review
+![Password Policy](attack_10_password_policy.png)
+- **Attack Path:** Pre-attack AD enumeration & policy audit.
+- **MITRE:** `T1201` (Password Policy Discovery)
+- **Evidence:** `net accounts /domain` output showing lockout threshold: `0` (None) — no lockout protection configured.
+
+---
+
+## 🔑 Path A — Credential Exposure & SMB Share Access
+
+### Screenshot 4: MITRE T1135 — Network Share Discovery
+![T1135 Network Share Discovery](attack_05_mitre_t1135_share_discovery.png)
+- **Attack Path:** Path A — Share enumeration phase.
+- **MITRE:** `T1135` (Network Share Discovery)
+- **Evidence:** SMB share listing from attacker (`192.168.23.131`) revealing `NexoraApp`, `C$`, `ADMIN$`, `NETLOGON`, `SYSVOL`.
+
+---
+
+### Screenshot 5: MITRE T1552.001 — Unsecured Credentials in Files
+![T1552.001 Unsecured Credentials](attack_06_mitre_t1552_unsecured_creds.png)
+- **Attack Path:** Path A — Credential extraction from `app.ini`.
+- **MITRE:** `T1552.001` (Credentials in Files)
+- **Evidence:** Plaintext `NEXORA\svc_backup` password recovered from `app.ini` on `\\NEXORA-DC\NexoraApp`.
+
+---
+
+## 🎫 Path B — Kerberoasting
+
+### Screenshot 6: Path B — Kerberoasting SPN Enumeration & Hash Capture
+![Path B Kerberoasting](attack_07_path_b_kerberoasting.png)
+- **Attack Path:** Path B — SPN enumeration & TGS ticket extraction.
+- **MITRE:** `T1558.003` (Kerberoasting)
+- **Evidence:** `GetUserSPNs.py` requesting TGS-REP for `svc-sql` (`MSSQLSvc/NEXORA-DC.nexora.local:1433`), etype 23 (RC4-HMAC).
+
+---
+
+### Screenshot 7: Full Hash Dump (`hash.txt`)
+![hash.txt Full](attack_14_hash_txt_full.png)
+- **Attack Path:** Path B / DCSync — Full credential material capture.
+- **MITRE:** `T1003.003` (OS Credential Dumping: NTDS), `T1110.002` (Password Cracking)
+- **Evidence:** Complete hash extraction file including domain user NTLMs captured via `secretsdump.py`.
+
+---
+
+## 🔓 Path C — BloodHound Active Directory ACL Abuse
+
+### Screenshot 8: BloodHound Data Collecting (SharpHound)
+![BloodHound Collecting](attack_01_bloodhound_collecting.png)
+- **Attack Path:** Path C — BloodHound ingestion phase.
+- **MITRE:** `T1069.002` (Permission Groups Discovery), `T1087.002` (Account Discovery)
+- **Evidence:** SharpHound data collection running against `nexora.local`, capturing all ACLs and relationships.
+
+---
+
+### Screenshot 9: BloodHound Data Uploads — Upload 1
+![BloodHound Uploads 1](attack_02_bloodhound_uploads.png)
+- **Evidence:** First batch of SharpHound collection ZIP uploaded to BloodHound Community Edition.
+
+---
+
+### Screenshot 10: BloodHound Data Uploads — Upload 2
+![BloodHound Uploads 2](attack_03_bloodhound_uploads1.png)
+- **Evidence:** Second collection batch uploaded, all `nexora.local` objects indexed in Neo4j graph database.
+
+---
+
+### Screenshot 11: Path C — BloodHound GenericAll ACL Attack Path
+![Path C BloodHound GenericAll](attack_08_path_c_bloodhound_genericall.png)
+- **Attack Path:** Path C — GenericAll privilege escalation visualization.
+- **MITRE:** `T1098` (Account Manipulation), `T1069.002`
+- **Evidence:** BloodHound graph shows `dev_user` → `GenericAll` → `svc-sql` → `MemberOf` → `Server Operators` → `NEXORA-DC`.
+
+---
+
+## 🏆 Domain Compromise Evidence
+
+### Screenshot 12: Admin Break Glass Account
+![Admin Break Glass](attack_11_admin_break_glass.png)
+- **Attack Path:** Full Domain Compromise — Administrator account access.
+- **MITRE:** `T1078.002` (Valid Accounts), `T1003.003`
+- **Evidence:** Break-glass Administrator account validated post-compromise.
+
+---
+
+### Screenshot 13: Hash of Admin Break Glass
+![Hash Admin Break Glass](attack_13_hash_admin_breakglass.png)
+- **Attack Path:** Full Domain Compromise — NTLM hash extraction.
+- **MITRE:** `T1003.003` (NTDS Credential Dumping)
+- **Evidence:** `Administrator` NTLM hash extracted via `secretsdump.py` DCSync from `NEXORA-DC`.
+
+---
+
+### Screenshot 14: `krbtgt` & Administrator NTLM Hashes
+![Hash krbtgt and Administrator](attack_12_hash_krbtgt_administrator.png)
+- **Attack Path:** Full Domain Compromise — Golden Ticket capability demonstrated.
+- **MITRE:** `T1003.003` (NTDS), `T1558.001` (Golden Ticket)
+- **Evidence:** Both `krbtgt` and `Administrator` NTLM hashes extracted — full forest compromise confirmed.
+
+---
+
+### Screenshot 15: Domain Compromise — Final Validation
+![Domain Compromise](attack_04_domain_compromise.png)
+- **Attack Path:** Full Domain Compromise achieved — End State.
+- **MITRE:** `T1078.002`, `T1003.003`, `T1098`
+- **Evidence:** Domain Admin shell or NTLM pass-the-hash session on `NEXORA-DC` (`192.168.23.129`), demonstrating full Active Directory forest compromise from initial low-privilege foothold.
+
+---
+
+## 📊 Evidence Summary Table
+
+| # | Screenshot File | Attack Path | MITRE ATT&CK ID | Category |
+| :---: | :--- | :--- | :--- | :--- |
+| A-1 | `screenshot_a1_dns_nslookup.jpeg` | Recon | `T1590` | Network Config |
+| A-2 | `screenshot_a2_client_ipconfig.jpeg` | Recon | — | Network Config |
+| A-3 | `screenshot_a3_dc_ipconfig.jpeg` | Recon | — | Network Config |
+| A-4 | `screenshot_a4_adapter_ipv4_config.jpeg` | Recon | — | Network Config |
+| A-5 | `screenshot_a5_advanced_dns_settings.jpeg` | Recon | — | Network Config |
+| 1 | `attack_15_helpdesk_user.png` | Initial Access | `T1078.002` | Identity |
+| 2 | `attack_09_ping_dc01_from_kali.png` | Recon | `T1016` | Network |
+| 3 | `attack_10_password_policy.png` | Recon | `T1201` | Policy |
+| 4 | `attack_05_mitre_t1135_share_discovery.png` | Path A | `T1135` | SMB Shares |
+| 5 | `attack_06_mitre_t1552_unsecured_creds.png` | Path A | `T1552.001` | Credentials |
+| 6 | `attack_07_path_b_kerberoasting.png` | Path B | `T1558.003` | Kerberoasting |
+| 7 | `attack_14_hash_txt_full.png` | Path B / DCSync | `T1003.003` | Hash Dump |
+| 8 | `attack_01_bloodhound_collecting.png` | Path C | `T1069.002` | BloodHound |
+| 9 | `attack_02_bloodhound_uploads.png` | Path C | `T1069.002` | BloodHound |
+| 10 | `attack_03_bloodhound_uploads1.png` | Path C | `T1069.002` | BloodHound |
+| 11 | `attack_08_path_c_bloodhound_genericall.png` | Path C | `T1098` | ACL Abuse |
+| 12 | `attack_11_admin_break_glass.png` | Compromise | `T1078.002` | Domain Admin |
+| 13 | `attack_13_hash_admin_breakglass.png` | Compromise | `T1003.003` | Hash Dump |
+| 14 | `attack_12_hash_krbtgt_administrator.png` | Compromise | `T1003.003`, `T1558.001` | Golden Ticket |
+| 15 | `attack_04_domain_compromise.png` | Compromise | `T1098` | Full DA |
