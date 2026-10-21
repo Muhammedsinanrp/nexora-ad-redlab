@@ -10,22 +10,28 @@ Document the authorized, isolated Active Directory red-team training lab built f
 - **Domain FQDN:** `nexora.local`
 - **NetBIOS Domain Name:** `NEXORA`
 - **Forest Functional Level:** Windows Server 2016 / 2022
-- **Hypervisor:** Oracle VirtualBox
-- **Virtual Network Type:** Host-Only Private Subnet (`vboxnet0` / `10.10.10.0/24`)
-- **Attacker Platform:** Kali Linux 2024.x
-- **Isolation Boundary:** Zero internet access, no default gateway, no bridged or NAT adapters configured during offensive testing.
+- **Hypervisor:** VMware Workstation / Oracle VirtualBox
+- **Virtual Network Type:** Isolated Private Host-Only Subnet (`192.168.23.0/24`)
+- **Attacker Platform:** Kali Linux 2024.x (`192.168.23.131`)
+- **Isolation Boundary:** Zero internet access, no default gateway, no bridged or external adapters configured during offensive testing.
 
 ---
 
-## 3. Lab Systems Specification
+## 3. Lab Systems Specification & Network Register
 
-| System Name | Hostname | IPv4 Address | Subnet Mask | Default Gateway | Role / Purpose |
+| Machine | Role / Hostname | OS | IP Address | Subnet Mask | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Nexora-Kali** | `kali.nexora.local` | `10.10.10.10` | `255.255.255.0` | None | Red Team testing & enumeration workstation |
-| **Nexora-DC01** | `DC01.nexora.local` | `10.10.10.20` | `255.255.255.0` | None | Primary Active Directory Domain Controller, DNS, Kerberos KDC |
-| **Nexora-WS-HR01** | `WS-HR01.nexora.local` | `10.10.10.30` | `255.255.255.0` | None | Human Resources workstation (Initial access user context) |
-| **Nexora-WS-DEV01** | `WS-DEV01.nexora.local` | `10.10.10.40` | `255.255.255.0` | None | Software Development workstation |
-| **Nexora-SRV-APP01** | `SRV-APP01.nexora.local` | `10.10.10.50` | `255.255.255.0` | None | Application & Database server hosting `NexoraApp` SMB share |
+| **Windows Server 2022 — NEXORA-DC** | `NEXORA-DC` (`DC.nexora.local`) | Windows Server 2022 Datacenter | `192.168.23.129` | `255.255.255.0` | Active Directory Domain Controller, Kerberos KDC, DNS |
+| **Windows 10 Client** | `DESKTOP-M8PCMPL` | Windows 10 Enterprise | `192.168.23.130` | `255.255.255.0` | Domain Client Workstation (Initial access user context) |
+| **Kali Linux** | `Nexora-Kali` | Kali Linux 2024.x | `192.168.23.131` | `255.255.255.0` | Red Team testing, enumeration & exploitation workstation |
+| **Active Directory Domain** | `nexora.local` | AD DS Forest | — | — | Target security boundary (NetBIOS: `NEXORA`) |
+
+### Hardware Resource Allocations
+
+| Configuration Tier | Host Machine RAM | Windows Server 2022 (DC) | Windows 10 Client | Kali Linux |
+| :--- | :--- | :--- | :--- | :--- |
+| **Standard Build** | 16 GB | 6 GB RAM, 2 vCPUs | 4 GB RAM, 2 vCPUs | 4 GB RAM, 2 vCPUs |
+| **Lite Build** | 8 GB | 3.5 GB RAM, 2 vCPUs | 2.5 GB RAM, 1 vCPU | 2 GB RAM, 1 vCPU |
 
 ---
 
