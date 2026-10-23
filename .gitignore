@@ -1,16 +1,36 @@
-# Operating System Files
+# Operating system files
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# IDE & Editor Files
-.vscode/
-.idea/
+# Editor and temporary files
 *.swp
 *.swo
-
-# Temporary & Log Files
-*.log
 scratch/
+*.tmp
+*.bak
+*.backup
+*.log
+.vscode/
+.idea/
+
+# Secrets and credentials
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.kdbx
+*.ccache
+*.kirbi
+*.ticket
+*hashcat*
+*cracked*
+*ACL-backup*
+
+# Python
 __pycache__/
 *.pyc
+.venv/
+venv/

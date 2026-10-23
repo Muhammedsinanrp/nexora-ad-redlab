@@ -1,0 +1,52 @@
+Nexora Active Directory Lab
+Domain: nexora.local
+Domain Controller: 192.168.23.129
+Attack path: Kerberoasting
+Account: svc_web
+SPN: HTTP/nexora-app.nexora.local
+SPN enumeration: Successful
+Service ticket request: Successful
+Password strength: Not yet assessed
+Scope: Isolated VMware host-only lab
+Domain minimum password length: 7
+Domain password complexity: Enabled
+PasswordNotRequired: False
+DoesNotRequirePreAuth: False
+TrustedForDelegation: False
+Finding: Minimum password length should be reviewed and strengthened.
+Evidence limitation: Ticket retrieval alone does not prove a weak password.
+Hardening performed: Domain minimum password length increased from 7 to 14 characters.
+Verification: Get-ADDefaultDomainPasswordPolicy confirmed MinPasswordLength=14 and ComplexityEnabled=True.
+
+Path A - SMB Share Permission Validation
+Target: 192.168.23.130
+Share: NexoraShare
+Account: NEXORA\labuser1
+SMB directory listing: Successful
+SMB file download: Successful
+SMB file upload: Denied (NT_STATUS_ACCESS_DENIED)
+Share permission: Read
+NTFS permission: Read & Execute for labuser1
+Remediation validation: Remote write blocked
+Credential exposure: Not demonstrated; README contains test data only.
+
+Policy history clarification:
+- Before hardening: minimum password length was 7 characters.
+- After hardening: minimum password length is 14 characters.
+- Complexity remains enabled.
+Kerberos evidence:
+- SPN enumeration and service-ticket request succeeded for svc_web.
+- Ticket retrieval alone does not establish password weakness.
+- No ticket file or cracking result is recorded in this evidence.
+Path B - Service Account and SPN Review
+Account: svc_web
+SID: S-1-5-21-541402727-2110131356-2808925786-1106
+SPN: HTTP/nexora-app.nexora.local
+Account enabled: True
+PasswordNeverExpires: False
+PasswordNotRequired: False
+Group membership: Domain Users only
+Kerberos service ticket request: Successful
+Password cracking: Not performed
+Confirmed weak password: No
+Conclusion: SPN discovery and ticket retrieval succeeded. Weak password or exploitable Kerberoasting vulnerability has not been demonstrated.

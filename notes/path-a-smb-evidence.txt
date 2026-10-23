@@ -1,0 +1,20 @@
+Path A - SMB Share Permission Validation
+
+Target: 192.168.23.130
+Share: NexoraShare
+Account: NEXORA\labuser1
+
+Evidence:
+- SMB authentication: Successful
+- Directory listing: Successful
+- README.txt download: Successful
+- File upload: Denied
+- Upload result: NT_STATUS_ACCESS_DENIED
+
+Share permission: Read
+NTFS permission: Read & Execute for labuser1
+
+Conclusion:
+The tested account can read the share but cannot upload files.
+No credential exposure was demonstrated.
+This result applies to the tested share and account only.

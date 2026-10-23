@@ -1,0 +1,22 @@
+Path C - Active Directory ACL Review
+
+Target account: svc_web  
+Target object: CN=Nexora Web Service,OU=Service Accounts,DC=nexora,DC=local
+
+Initial finding:
+BUILTIN\Account Operators had a direct GenericAll permission on the target object.
+
+Remediation:
+Removed the direct Account Operators ACL entries using dsacls.
+
+Verification:
+- PowerShell Get-Acl query returned no Account Operators entries.
+- dsacls output contained no Account Operators entry.
+- svc_web group membership was reviewed.
+- SYSTEM and privileged administrator permissions were retained.
+
+Result:
+The direct Account Operators ACL entry was removed and the absence of a matching entry was verified on the target object.
+
+Limitation:
+This check does not establish that all possible Active Directory privilege-escalation paths are absent.
