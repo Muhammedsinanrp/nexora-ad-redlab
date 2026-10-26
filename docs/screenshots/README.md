@@ -138,10 +138,10 @@ Full assessment report: [Nexora_AD_Lab_Assessment_Report.pdf](../Nexora_AD_Lab_A
 | Field | Value |
 | :--- | :--- |
 | **Attacker** | Kali Linux (`192.168.23.131`) |
-| **Target** | NEXORA-DC (`192.168.23.129`) |
-| **Command** | `smbclient.py 'nexora.local/jsmith:***REMOVED***'@192.168.23.129` |
+| **Target** | SVR-APP01 (`192.168.23.129`) |
+| **Command** | `netexec smb svr-app01.nexora.local -u asmith -p 'Password123!' --shares` |
 | **MITRE** | `T1135` (Network Share Discovery) |
-| **Evidence** | SMB share listing reveals `\\NEXORA-DC\NexoraApp` (readable), `C$`, `ADMIN$`, `NETLOGON`, `SYSVOL`. |
+| **Evidence** | SMB share enumeration via NetExec reveals shares `ADMIN$`, `AppDeploy$` (READ), `C$`, `Deploy$` (READ), `IPC$` (READ) on `SVR-APP01`. |
 
 ---
 
@@ -203,15 +203,16 @@ Full assessment report: [Nexora_AD_Lab_Assessment_Report.pdf](../Nexora_AD_Lab_A
 | **DC Target** | NEXORA-DC | `192.168.23.129` | LDAP queries, RPC password reset |
 | **Domain** | `nexora.local` | — | GenericAll ACE: `IT-Support` → `svc-sql` |
 
-### Screenshot 8: BloodHound Data Collecting (SharpHound)
+### Screenshot 8: BloodHound Data Collecting (bloodhound-python)
 ![BloodHound Collecting](attack_01_bloodhound_collecting.png)
 
 | Field | Value |
 | :--- | :--- |
-| **Collector Machine** | Windows 10 Client (`192.168.23.130`) |
-| **Target Domain** | `nexora.local` — DC: `192.168.23.129` |
-| **Tool** | `SharpHound.exe -c All --domain nexora.local` |
+| **Attacker / Collector** | Kali Linux (`192.168.23.131`) |
+| **Target Domain** | `nexora.local` — DC: `dc01.nexora.local` (`192.168.23.129`) |
+| **Tool** | `bloodhound-python -u asmith -p 'Password123!' -d nexora.local -c All -dc dc01.nexora.local -ns 192.168.23.129` |
 | **MITRE** | `T1069.002` (Permission Groups Discovery), `T1087.002` (Account Discovery) |
+| **Evidence** | Complete AD enumeration collected: 1 domain, 5 computers, 31 users, 56 groups, 2 GPOs, 10 OUs, 19 containers. |
 
 ---
 
@@ -321,7 +322,7 @@ Full assessment report: [Nexora_AD_Lab_Assessment_Report.pdf](../Nexora_AD_Lab_A
 | 5 | `attack_06_mitre_t1552_unsecured_creds.png` | `192.168.23.131` | `192.168.23.129` | `T1552.001` | Credentials |
 | 6 | `attack_07_path_b_kerberoasting.png` | `192.168.23.131` | `192.168.23.129` | `T1558.003` | Kerberoasting |
 | 7 | `attack_14_hash_txt_full.png` | `192.168.23.131` | `192.168.23.129` | `T1003.003` | Hash Dump |
-| 8 | `attack_01_bloodhound_collecting.png` | `192.168.23.130` | `192.168.23.129` | `T1069.002` | BloodHound |
+| 8 | `attack_01_bloodhound_collecting.png` | `192.168.23.131` | `192.168.23.129` | `T1069.002` | BloodHound |
 | 9 | `attack_02_bloodhound_uploads.png` | `192.168.23.131` | `192.168.23.129` | `T1069.002` | BloodHound |
 | 10 | `attack_03_bloodhound_uploads1.png` | `192.168.23.131` | `192.168.23.129` | `T1069.002` | BloodHound |
 | 11 | `attack_08_path_c_bloodhound_genericall.png` | `192.168.23.131` | `192.168.23.129` | `T1098` | ACL Abuse |

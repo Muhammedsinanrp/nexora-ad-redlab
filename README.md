@@ -108,7 +108,7 @@ An authorized, isolated Active Directory security lab designed to practice inter
 - **Security Lesson:** Misconfigured Active Directory object permissions create indirect privilege escalation chains that often evade perimeter defenses.
 - **MITRE ATT&CK:** [T1069.002](https://attack.mitre.org/techniques/T1069/002/) (Domain Groups Discovery), [T1098](https://attack.mitre.org/techniques/T1098/) (Account Manipulation).
 
-![BloodHound Data Collection — SharpHound](docs/screenshots/attack_01_bloodhound_collecting.png)
+![BloodHound Data Collection — bloodhound-python](docs/screenshots/attack_01_bloodhound_collecting.png)
 ![Path C — BloodHound GenericAll ACL Attack Path](docs/screenshots/attack_08_path_c_bloodhound_genericall.png)
 
 ### 🏆 Full Domain Compromise
