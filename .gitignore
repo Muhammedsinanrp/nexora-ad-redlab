@@ -3,7 +3,7 @@
 Thumbs.db
 desktop.ini
 
-# Editor and temporary files
+# Editors, temporary files and local outputs
 *.swp
 *.swo
 scratch/
@@ -13,10 +13,12 @@ scratch/
 *.log
 .vscode/
 .idea/
+*.local
 
-# Secrets and credentials
+# Secrets, credentials and private assessment artefacts
 .env
 .env.*
+!.env.example
 *.key
 *.pem
 *.p12
@@ -25,9 +27,22 @@ scratch/
 *.ccache
 *.kirbi
 *.ticket
+*.pcap
+*.pcapng
 *hashcat*
 *cracked*
 *ACL-backup*
+*secretsdump*
+*ntds*
+*ntlm*
+*kerberos-ticket*
+*credentials*
+*passwords*
+bloodhound*.json
+bloodhound*.zip
+sharphound*.zip
+*.sqlite
+*.db
 
 # Python
 __pycache__/
