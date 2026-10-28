@@ -1,7 +1,6 @@
-/* ══════════════════════════════════════════════════════
-   NEXORA SYSTEMS — AD RED TEAM SIMULATION LAB
-   app.js — Complete Interactive Logic
-══════════════════════════════════════════════════════ */
+/* NEXORA AD LAB — DEMONSTRATION UI ONLY.
+   This file uses hard-coded sample data and does not connect to a live AD environment.
+   Do not treat counters, terminal lines, topology nodes, or alerts as real findings. */
 
 'use strict';
 
@@ -10,8 +9,9 @@ const state = {
   activeTab: 'dashboard',
   termPaused: false,
   termInterval: null,
-  stats: { hosts: 2, creds: 7, objects: 847, privesc: 4 },
-  statsTargets: { hosts: 14, creds: 14, objects: 1247, privesc: 12 },
+  // Static demonstration values only; not collected from a real assessment.
+  stats: { hosts: 2, creds: 0, objects: 0, privesc: 0 },
+  statsTargets: { hosts: 2, creds: 0, objects: 0, privesc: 0 },
   gaugeValue: 42,
   gaugeTarget: 42,
   alertsOpen: false,
@@ -103,24 +103,14 @@ function initMatrix() {
 
 // ── Terminal ──────────────────────────────────────────
 const liveTermLines = [
-  { type: 'info', msg: '[*] Scanning for unconstrained delegation targets...' },
-  { type: 'ok',   msg: '[+] Found: SQL01.nexcorp.local — TrustedForDelegation=TRUE' },
-  { type: 'warn', msg: '[!] Event ID 4624 — Logon type 3 from attacker IP' },
-  { type: 'info', msg: '[*] Executing Invoke-Mimikatz — sekurlsa::logonpasswords' },
-  { type: 'ok',   msg: '[+] Plaintext: SVC_WEB — Webserver@2023' },
-  { type: 'info', msg: '[*] Enumerating DA group membership...' },
-  { type: 'ok',   msg: '[+] j.admin is Domain Admin — pivoting' },
-  { type: 'warn', msg: '[!] Windows Defender triggered on AMSI bypass attempt' },
-  { type: 'ok',   msg: '[+] AMSI patched in-memory — bypass successful' },
-  { type: 'info', msg: '[*] Loading Rubeus — ticket request in progress' },
-  { type: 'ok',   msg: '[+] TGS obtained for SPN: MSSQLSvc/SQL01.nexcorp.local' },
-  { type: 'warn', msg: '[!] Honeypot account access detected — adjusting TTPs' },
-  { type: 'ok',   msg: '[+] ACL path found: jsmith → WriteDACL → finance-admins' },
-  { type: 'info', msg: '[*] Performing DCSync — extracting all domain hashes' },
-  { type: 'ok',   msg: '[+] Domain hashes extracted: 847 accounts' },
-  { type: 'warn', msg: '[!] SIEM alert generated — investigating DRSUAPI calls' },
-  { type: 'ok',   msg: '[+] Lateral movement to DC02 — PTH success' },
-  { type: 'info', msg: '[*] Persistence set: Scheduled task on DC02 — every 15min' },
+  { type: 'info', msg: '[DEMO] Sample terminal output — not connected to a live domain.' },
+  { type: 'info', msg: '[DEMO] Share enumeration would be recorded here after an authorized test.' },
+  { type: 'info', msg: '[DEMO] Directory discovery results are illustrative placeholders.' },
+  { type: 'warn', msg: '[DEMO] No credentials, hashes, or tickets are collected by this dashboard.' },
+  { type: 'info', msg: '[DEMO] Replace sample data only with validated, sanitized lab evidence.' },
+  { type: 'ok',   msg: '[DEMO] Interface animation running; no security action was executed.' },
+  { type: 'info', msg: '[DEMO] Findings must be verified independently against the lab logs.' },
+
 ];
 
 let termLineIndex = 0;
