@@ -10,9 +10,9 @@
 - Label the browser-based dashboard as simulated rather than live telemetry.
 - Replace screenshot documentation that exposed a plaintext password in a command with redaction guidance.
 
-## Manual actions still required before merging
+## Remaining actions (cannot be completed safely from repository access alone)
 
-1. **Redact or remove sensitive binary screenshots.** Text-file edits cannot redact pixels in PNG/JPEG files. In particular, inspect SMB screenshots, hash dumps, Kerberos ticket output, credential screenshots, and any images claiming domain compromise. Do not merge until every retained image is safe for public viewing.
+1. **Redact or remove sensitive binary screenshots.** Text-file edits cannot redact pixels in PNG/JPEG files. In particular, inspect SMB screenshots, hash dumps, Kerberos ticket output, credential screenshots, and any images claiming domain compromise. The review branch removed four high-risk screenshots, including plaintext credential/hash-related evidence, before the documentation PR was merged. Remaining images still require visual inspection.
 2. **Rotate secrets** if any displayed credential was real or reused. A public-history rewrite or file deletion cannot invalidate a credential.
 3. **Resolve host identity.** The evidence associates `192.168.23.129` with `NEXORA-DC`, `dc01.nexora.local`, and `SVR-APP01`. Check the actual VM hostname, DNS forward/reverse records, and capture context.
 4. **Validate strong attack claims.** The final report does not establish password cracking, DCSync, hash recovery, Golden Ticket use, or successful domain compromise. Only reinstate such claims if reproducible, sanitized evidence directly supports each stage.
@@ -21,4 +21,4 @@
 
 ## Scope of this review
 
-These changes improve consistency and safe publication. They do not execute the lab, independently validate VM state, redact binary screenshots, or prove that all historical secrets have been removed. Review each remaining file and image before merging.
+The documentation changes are merged into `main`, and the dashboard's fabricated credential/compromise terminal output has been replaced with clearly labelled demo messages. Four high-risk screenshots were removed from the current branch. These actions do not rewrite Git history, invalidate credentials, inspect every remaining image, or execute the lab. Complete the remaining actions above before claiming the repository is fully clean.
