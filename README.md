@@ -39,6 +39,10 @@ The current final report supports these conclusions:
 
 See [FINAL-REPORT.md](FINAL-REPORT.md) for results and limitations, and [SECURITY-REVIEW.md](SECURITY-REVIEW.md) for the correction checklist.
 
+## Evidence and validation
+
+See [EVIDENCE-REGISTER.md](EVIDENCE-REGISTER.md) for the evidence index, capture standards, outstanding validation items, and submission checklist. Keep original, sanitized proof under `evidence/`; never use placeholder screenshots or simulated dashboard output as real test evidence.
+
 ## Repository map
 
 - `FINAL-REPORT.md` — assessment findings and limitations.
