@@ -23,9 +23,28 @@ The Nexora lab is a controlled environment built to practice enterprise Active D
 - Record evidence, limitations, remediation and follow-up validation.
 - Present the work in a reproducible, security-conscious portfolio format.
 
-## Lab architecture
+## 🏗️ Lab Architecture
 
-The documented environment uses VMware virtual machines on an isolated host-only network.
+The lab operates on a strictly isolated, host-only virtual network (`192.168.23.0/24`) with no route to the internet.
+
+### Standard Build (Recommended)
+
+Use this baseline topology for a repeatable lab build:
+
+| Virtual machine | Purpose | Recommended configuration | Network |
+|---|---|---|---|
+| Windows Server 2022 | Active Directory Domain Services and DNS (`nexora.local`) | 2–4 vCPUs, 4–6 GB RAM, 60 GB disk | Host-only VMnet |
+| Windows 10 | Domain-joined client workstation | 2 vCPUs, 4–6 GB RAM, 50–60 GB disk | Same host-only VMnet |
+| Kali Linux | Authorized assessment workstation | 2–4 vCPUs, 4–6 GB RAM, 40 GB disk | Same host-only VMnet |
+
+*These are suggested starting resources, not verified specifications of the existing VMs. Adjust them to the host computer’s available resources. Keep the lab on a host-only network with no internet or production route; do not add a bridged adapter.*
+
+| System | Role | Documented address |
+|---|---|---|
+| Windows Server 2022 — `NEXORA-DC` | Intended Domain Controller / DNS | `192.168.23.129/24` |
+| Windows 10 — `DESKTOP-M8PCMPL` | Domain client | `192.168.23.130/24` |
+| Kali Linux — `Nexora-Kali` | Assessment workstation | `192.168.23.131/24` |
+| Active Directory | Domain / NetBIOS | `nexora.local` / `NEXORA` |
 
 | System | Role | Documented address |
 |---|---|---|
