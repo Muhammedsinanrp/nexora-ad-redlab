@@ -121,14 +121,30 @@ nexora-ad-redlab/
 
 See [docs/Lab-Manual.md](docs/Lab-Manual.md) and [docs/Attack-Scenario-Manual.md](docs/Attack-Scenario-Manual.md).
 
-## Tools and technologies
+## 🛠️ Tooling Used
 
-- **Operating systems:** Kali Linux, Windows Server 2022, Windows client
-- **Directory and network assessment:** BloodHound, LDAP utilities, SMB client tools, NetExec
-- **Kerberos / AD tooling:** Impacket utilities and native Windows administration tools
-- **Validation and reporting:** PowerShell, `dcdiag`, Git, Markdown, MITRE ATT&CK
+The lab uses free and open-source tools where applicable:
 
-Only use these tools against systems you own or are explicitly authorized to assess.
+- **Enumeration & Mapping:** BloodHound, SharpHound, NetExec (formerly CrackMapExec)
+- **Exploitation & protocol testing:** Impacket utilities (`secretsdump`, `psexec`, `GetUserSPNs`, `smbclient`), `rpcclient`
+- **Password-audit tools:** John the Ripper, Hashcat
+- **Operating systems:** Kali Linux, Windows Server Evaluation, Windows 10
+
+Use offensive tools only in the isolated lab or on systems for which you have explicit authorization. The presence of a tool in this list does not imply that every listed technique was successfully executed in this assessment.
+
+
+## 🔄 Lab Reset & Reproducibility
+
+Use snapshots to return the lab to a known state before repeating tests:
+
+1. **Prepare a baseline:** Configure the lab and verify the domain, DNS, VM hostnames, IP addresses and host-only network.
+2. **Create clean snapshots:** Take a snapshot of each VM after baseline configuration and before assessment activity. Label them clearly, for example `Pre-Assessment`.
+3. **Record the run:** For each test, note the snapshot used, date/time, source VM, target, account role, command or procedure, and observed result.
+4. **Reset between runs:** Shut down or revert the relevant VMs to the baseline snapshots before repeating an attack path. Confirm the network and system clocks are correct after restoration.
+5. **Validate outcomes:** Re-run the same checks and compare the output. Preserve failures and inconsistent results; do not describe a path as reproducible until it has been successfully repeated and documented.
+6. **Store safe evidence:** Keep sanitized screenshots and logs in the evidence folders. Never commit passwords, hashes, tickets, private keys, or unredacted credential dumps.
+
+**Current reproducibility status:** Repeatability of all end-to-end attack paths has not yet been established by the current final report. Treat the reset process above as the recommended validation workflow, not as a claim that every path has already been reproduced.
 
 ## Safety and scope
 
